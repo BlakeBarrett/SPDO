@@ -1,6 +1,6 @@
 # spdo
 
-A very simple speedometer app written in Flutter.
+A very simple speedometer app written in [Flutter](https://flutter.dev).
 
 ## Getting Started
 
