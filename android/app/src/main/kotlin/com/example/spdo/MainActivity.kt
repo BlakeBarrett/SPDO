@@ -1,4 +1,4 @@
-package com.example.spdo
+package com.blakebarrett.spdo
 
 import io.flutter.embedding.android.FlutterActivity
 
