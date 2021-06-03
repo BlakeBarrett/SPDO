@@ -67,7 +67,7 @@ app.*.map.json
 .classpath
 .project
 .settings/
-.vscode/
+# .vscode/ # We actually need this for the launch configurations.
 
 # Flutter repo-specific
 /bin/cache/
