@@ -2,16 +2,20 @@ import 'package:geolocator/geolocator.dart';
 import 'dart:async';
 
 class SpeedReader {
-  // Speed is rendered in M/s
-  late double speed = 0.0;
-  late Stream<Position> stream = Geolocator.getPositionStream(
-    desiredAccuracy: LocationAccuracy.best,
-    intervalDuration: Duration(microseconds: 0),
-  );
   late LocationPermission _permission;
+  late var _listener;
 
-  SpeedReader() {
-    _determinePosition();
+  SpeedReader(void updateListener(Position value)) {
+    _determinePosition().then((value) {
+      _listener = Geolocator.getPositionStream(
+        desiredAccuracy: LocationAccuracy.bestForNavigation,
+        intervalDuration: Duration(microseconds: 0),
+      ).listen(updateListener);
+    });
+  }
+
+  void cancel() {
+    _listener.cancel();
   }
 
   /// Determine the current position of the device.
@@ -60,12 +64,4 @@ class SpeedReader {
     // continue accessing the position of the device.
     return await Geolocator.getCurrentPosition();
   }
-
-  // late StreamSubscription<Position> positionStream =
-  //     stream.listen((Position position) {
-  //   print(position.latitude.toString() + ', ' + position.longitude.toString());
-  //   print(position.speed);
-  //   speed = position.speed;
-  // });
-
 }

@@ -3,10 +3,10 @@ import 'package:geolocator/geolocator.dart';
 import 'speedreader.dart';
 
 void main() {
-  runApp(MyApp());
+  runApp(SPDO_App());
 }
 
-class MyApp extends StatelessWidget {
+class SPDO_App extends StatelessWidget {
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
@@ -25,6 +25,7 @@ class MyApp extends StatelessWidget {
         primarySwatch: Colors.pink,
       ),
       home: MyHomePage(title: 'Speedometer'),
+      debugShowCheckedModeBanner: false,
     );
   }
 }
@@ -52,14 +53,12 @@ class _MyHomePageState extends State<MyHomePage> {
   var _showMetric = false;
   var _fastestSpeedKPH = 0.0; // kilometers per hour;
 
-  // Position? _lastPosition;
-  // late StreamSubscription<Position> _positionStream;
-  late var _positionStream;
+  late var _speedReader;
 
   @override
   void initState() {
     super.initState();
-    _positionStream = SpeedReader().stream.listen((Position position) {
+    _speedReader = SpeedReader((final Position position) {
       setState(() {
         var speedKPH = msToKPH(position.speed);
 
@@ -85,7 +84,7 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   void deactivate() {
     super.deactivate();
-    _positionStream.cancel();
+    _speedReader.cancel();
   }
 
   double msToKPH(double metersPerSecond) {
