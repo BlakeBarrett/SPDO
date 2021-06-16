@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'speedreader.dart';
+import 'gauges/digital.dart';
 
 void main() {
   runApp(SPDO_App());
@@ -123,24 +124,6 @@ class _MyHomePageState extends State<MyHomePage> {
       ),
       // floatingActionButton:
       // _floatingActionButton, // This trailing comma makes auto-formatting nicer for build methods.
-    );
-  }
-}
-
-class DigitalGauge extends StatelessWidget {
-  const DigitalGauge({
-    Key? key,
-    required String value,
-  })  : _value = value,
-        super(key: key);
-
-  final String _value;
-
-  @override
-  Widget build(BuildContext context) {
-    return Text(
-      '$_value',
-      style: Theme.of(context).textTheme.headline1,
     );
   }
 }
