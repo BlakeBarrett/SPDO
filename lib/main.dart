@@ -7,6 +7,7 @@ void main() {
   runApp(SPDO_App());
 }
 
+// ignore: camel_case_types
 class SPDO_App extends StatelessWidget {
   // This widget is the root of your application.
   @override
