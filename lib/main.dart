@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'speedreader.dart';
 import 'gauges/digital.dart';
+import 'gauges/analog.dart';
 
 void main() {
   runApp(SPDO_App());
@@ -52,6 +53,7 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   var _display = '0';
+  var _speed = 0;
   var _showMetric = false;
   var _fastestSpeedKPH = 0.0; // kilometers per hour;
 
@@ -63,6 +65,7 @@ class _MyHomePageState extends State<MyHomePage> {
     _speedReader = SpeedReader((final Position position) {
       setState(() {
         var speedKPH = msToKPH(position.speed);
+        _speed = (_showMetric ? speedKPH : kphToMPH(speedKPH)).abs().round();
 
         // keep track of where we are
         // _lastPosition = position;
@@ -70,11 +73,7 @@ class _MyHomePageState extends State<MyHomePage> {
         // update the high-score
         if (speedKPH > _fastestSpeedKPH) _fastestSpeedKPH = speedKPH;
 
-        final String displaySpeed =
-            (_showMetric ? speedKPH : kphToMPH(speedKPH))
-                .abs()
-                .round()
-                .toString();
+        final String displaySpeed = _speed.toString();
 
         _display = (_showMetric ? displaySpeed + 'km/h' : displaySpeed + 'MPH');
 
@@ -84,9 +83,9 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   @override
-  void deactivate() {
-    super.deactivate();
+  void dispose() {
     _speedReader.cancel();
+    super.dispose();
   }
 
   double msToKPH(double metersPerSecond) {
@@ -116,10 +115,12 @@ class _MyHomePageState extends State<MyHomePage> {
       body: Center(
         // Center is a layout widget. It takes a single child and positions it
         // in the middle of the parent.
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
+        child: Stack(
           children: <Widget>[
-            DigitalGauge(value: _display),
+            AnalogGauge(speed: _speed),
+            Center(
+              child: DigitalGauge(value: _display),
+            )
           ],
         ),
       ),
