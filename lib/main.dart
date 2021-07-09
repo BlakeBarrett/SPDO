@@ -27,31 +27,19 @@ class SPDO_App extends StatelessWidget {
         // is not restarted.
         primarySwatch: Colors.pink,
       ),
-      home: MyHomePage(title: 'Speedometer'),
+      home: SpeedListenerWidget(),
       debugShowCheckedModeBanner: false,
     );
   }
 }
 
-class MyHomePage extends StatefulWidget {
-  MyHomePage({Key? key, required this.title}) : super(key: key);
-
-  // This widget is the home page of your application. It is stateful, meaning
-  // that it has a State object (defined below) that contains fields that affect
-  // how it looks.
-
-  // This class is the configuration for the state. It holds the values (in this
-  // case the title) provided by the parent (in this case the App widget) and
-  // used by the build method of the State. Fields in a Widget subclass are
-  // always marked "final".
-
-  final String title;
-
+class SpeedListenerWidget extends StatefulWidget {
+  SpeedListenerWidget({Key? key}) : super(key: key);
   @override
-  _MyHomePageState createState() => _MyHomePageState();
+  _SpeedListenerWidgetState createState() => _SpeedListenerWidgetState();
 }
 
-class _MyHomePageState extends State<MyHomePage> {
+class _SpeedListenerWidgetState extends State<SpeedListenerWidget> {
   var _display = '0';
   var _speed = 0;
   var _showMetric = false;
@@ -100,32 +88,29 @@ class _MyHomePageState extends State<MyHomePage> {
 
   @override
   Widget build(BuildContext context) {
-    // This method is rerun every time setState is called, for instance as done
-    // by the _incrementCounter method above.
-    //
-    // The Flutter framework has been optimized to make rerunning build methods
-    // fast, so that you can just rebuild anything that needs updating rather
-    // than having to individually change instances of widgets.
+    return SpeedometerWidget(speed: _speed.toDouble(), display: _display);
+  }
+}
+
+class SpeedometerWidget extends StatelessWidget {
+  const SpeedometerWidget({required this.speed, required this.display})
+      : super();
+  final double speed;
+  final String display;
+
+  @override
+  Widget build(BuildContext context) {
     return Scaffold(
-      // appBar: AppBar(
-      //   // Here we take the value from the MyHomePage object that was created by
-      //   // the App.build method, and use it to set our appbar title.
-      //   title: Text(widget.title),
-      // ),
       body: Center(
-        // Center is a layout widget. It takes a single child and positions it
-        // in the middle of the parent.
         child: Stack(
           children: <Widget>[
-            AnalogGauge(speed: _speed),
+            AngledNeedle(angle: speed),
             Center(
-              child: DigitalGauge(value: _display),
+              child: DigitalGauge(value: display),
             )
           ],
         ),
       ),
-      // floatingActionButton:
-      // _floatingActionButton, // This trailing comma makes auto-formatting nicer for build methods.
     );
   }
 }
