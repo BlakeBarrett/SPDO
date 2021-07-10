@@ -15,4 +15,4 @@ A very simple speedometer app written in [Flutter](https://flutter.dev).
  * [`lib/gauges`](lib/gauges/) are where the different gauge files are located.
 
 ## Action Shot
-![18MPH](https://user-images.githubusercontent.com/578572/120377563-24b9a900-c2d2-11eb-92d1-16d79ef02c0d.PNG)
+![IMG_1556](https://user-images.githubusercontent.com/578572/125177886-59076b80-e194-11eb-9aaa-37fbce5c7935.PNG)
