@@ -96,7 +96,7 @@ class _SpeedListenerWidgetState extends State<SpeedListenerWidget> {
 @immutable
 class SpeedometerWidget extends StatefulWidget {
   SpeedometerWidget({required this.speed, required this.display}) : super();
-  double speed;
+  final double speed;
   final String display;
 
   @override
@@ -105,8 +105,8 @@ class SpeedometerWidget extends StatefulWidget {
 
 class _SpeedometerWidgetState extends State<SpeedometerWidget>
     with SingleTickerProviderStateMixin {
-  late Animation<double> _animation;
-  late AnimationController _animationController;
+  late Animation<double>? _animation;
+  late AnimationController? _animationController;
 
   late var speed = widget.speed;
 
@@ -116,28 +116,41 @@ class _SpeedometerWidgetState extends State<SpeedometerWidget>
     _animationController = new AnimationController(
         duration: const Duration(seconds: 1), vsync: this);
     _animation =
-        Tween<double>(begin: 0, end: 100.0).animate(_animationController)
+        Tween<double>(begin: 0, end: 100.0).animate(_animationController!)
           ..addListener(() {
             setState(() {
-              speed = _animation.value;
+              speed = _animation!.value;
             });
           });
-    _animationController.forward();
+    _animationController?.addStatusListener((status) {
+      if (status == AnimationStatus.completed) {
+        _animationController?.reverse();
+      } else if (status == AnimationStatus.dismissed) {
+        _animationController?.dispose();
+        _animationController = null;
+        _animation = null;
+      }
+    });
+    _animationController?.forward();
   }
 
   @override
   void dispose() {
-    _animationController.dispose();
+    _animationController?.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
+    double _speed = widget.speed;
+    if (_animation != null) {
+      _speed = _animation!.value;
+    }
     return Scaffold(
       body: Center(
         child: Stack(
           children: <Widget>[
-            AnalogGauge(speed: speed),
+            AnalogGauge(speed: _speed),
             Center(
               child: DigitalGauge(value: widget.display),
             )
