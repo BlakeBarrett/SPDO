@@ -1,3 +1,4 @@
+import 'package:flutter/animation.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'speedreader.dart';
@@ -92,11 +93,43 @@ class _SpeedListenerWidgetState extends State<SpeedListenerWidget> {
   }
 }
 
-class SpeedometerWidget extends StatelessWidget {
-  const SpeedometerWidget({required this.speed, required this.display})
-      : super();
-  final double speed;
+@immutable
+class SpeedometerWidget extends StatefulWidget {
+  SpeedometerWidget({required this.speed, required this.display}) : super();
+  double speed;
   final String display;
+
+  @override
+  _SpeedometerWidgetState createState() => _SpeedometerWidgetState();
+}
+
+class _SpeedometerWidgetState extends State<SpeedometerWidget>
+    with SingleTickerProviderStateMixin {
+  late Animation<double> _animation;
+  late AnimationController _animationController;
+
+  late var speed = widget.speed;
+
+  @override
+  void initState() {
+    super.initState();
+    _animationController = new AnimationController(
+        duration: const Duration(seconds: 1), vsync: this);
+    _animation =
+        Tween<double>(begin: 0, end: 100.0).animate(_animationController)
+          ..addListener(() {
+            setState(() {
+              speed = _animation.value;
+            });
+          });
+    _animationController.forward();
+  }
+
+  @override
+  void dispose() {
+    _animationController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -104,9 +137,9 @@ class SpeedometerWidget extends StatelessWidget {
       body: Center(
         child: Stack(
           children: <Widget>[
-            AngledNeedle(angle: speed),
+            AnalogGauge(speed: speed),
             Center(
-              child: DigitalGauge(value: display),
+              child: DigitalGauge(value: widget.display),
             )
           ],
         ),

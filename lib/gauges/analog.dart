@@ -1,15 +1,15 @@
 import 'package:flutter/material.dart';
+import 'dart:math' as math;
 
 @immutable
 class AnalogGauge extends StatelessWidget {
   AnalogGauge({required final this.speed, final this.maxSpeed = 90}) : super();
-  final double speed; // meters per second
+  final double speed;
   final int maxSpeed;
 
   @override
   Widget build(BuildContext context) {
-    // for example: ((180 / 90) * 65) / 180) === ((2) * 65) / 180) == 130º / 180º = 1.5 radians.
-    var angle = ((180 / maxSpeed) * this.speed) / 180;
+    var angle = this.speed * (math.pi / this.maxSpeed);
     return AngledNeedle(angle: angle);
   }
 }
@@ -21,11 +21,10 @@ class AngledNeedle extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     var size = MediaQuery.of(context).size;
-    var width = size.width;
-    var height = size.height;
-    var y = height - (height / 5);
-    var tip = Offset(0, y);
-    var pivot = Offset(width / 2, y);
+    var width = size.width / 2;
+    var height = size.height - (size.height / 5);
+    var tip = Offset(0, height);
+    var pivot = Offset(width, height);
 
     Widget line = Container(
         width: width,
@@ -37,7 +36,8 @@ class AngledNeedle extends StatelessWidget {
               thickness: 20,
               color: Colors.redAccent),
         ));
-    return Transform.rotate(angle: angle, origin: pivot, child: line);
+    return Transform.rotate(
+        angle: angle, alignment: Alignment.bottomRight, child: line);
   }
 }
 
