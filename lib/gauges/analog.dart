@@ -1,43 +1,75 @@
 import 'package:flutter/material.dart';
+import 'dart:math' as math;
 
 @immutable
 class AnalogGauge extends StatelessWidget {
-  AnalogGauge({required final this.speed}) : super();
-
-  final int speed;
+  AnalogGauge({required final this.speed, final this.maxSpeed = 90}) : super();
+  final double speed;
+  final int maxSpeed;
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-        width: MediaQuery.of(context).size.width,
-        height: MediaQuery.of(context).size.height,
-        child: CustomPaint(
-          painter: _AnalogGauge(speed: speed),
-        ));
+    var angle = this.speed * (math.pi / this.maxSpeed);
+    return AngledNeedle(angle: angle);
   }
 }
 
-class _AnalogGauge extends CustomPainter {
-  _AnalogGauge({required final this.speed, final this.topSpeed = 90}) : super();
-  int speed;
-  int topSpeed;
+@immutable
+class AngledNeedle extends StatelessWidget {
+  AngledNeedle({required final this.angle}) : super();
+  final double angle;
+  @override
+  Widget build(BuildContext context) {
+    var size = MediaQuery.of(context).size;
+    var width = size.width / 2;
+    var height = size.height - (size.height / 5);
+    var tip = Offset(0, height);
+    var pivot = Offset(width, height);
+
+    Widget line = Container(
+        width: width,
+        height: height,
+        child: CustomPaint(
+          painter: _LinePainter(
+              origin: tip,
+              destination: pivot,
+              thickness: 20,
+              color: Colors.redAccent),
+        ));
+    return Transform.rotate(
+        angle: angle, alignment: Alignment.bottomRight, child: line);
+  }
+}
+
+class _LinePainter extends CustomPainter {
+  _LinePainter(
+      {required final this.origin,
+      required final this.destination,
+      required final this.thickness,
+      required final this.color})
+      : super();
+
+  Offset origin, destination;
+  Color color;
+  int thickness;
 
   @override
   void paint(Canvas canvas, Size size) {
-    var centerX = size.width / 2;
     var paint = Paint()
-      ..color = Colors.redAccent
+      ..color = this.color
       ..style = PaintingStyle.fill;
 
     var path = Path();
 
-    var topPoint = (speed / topSpeed) * centerX;
-
-    path.moveTo(topPoint, 0);
-    path.lineTo(centerX - 10, size.height);
-    path.lineTo(centerX + 10, size.height);
+    path.moveTo(this.origin.dx, this.origin.dy);
+    path.lineTo(this.destination.dx, this.origin.dy - (thickness / 2));
+    path.lineTo(this.destination.dx, this.origin.dy + (thickness / 2));
+    path.lineTo(this.origin.dx, this.origin.dy);
     path.close();
+
     canvas.drawPath(path, paint);
+
+    canvas.drawCircle(this.destination, (this.thickness.toDouble()), paint);
   }
 
   @override
