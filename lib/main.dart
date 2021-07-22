@@ -1,3 +1,5 @@
+// import 'dart:developer';
+
 import 'package:flutter/animation.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
@@ -17,44 +19,112 @@ class SPDO_App extends StatelessWidget {
     return MaterialApp(
       title: 'SPDO',
       theme: ThemeData(
-        // This is the theme of your application.
-        //
-        // Try running your application with "flutter run". You'll see the
-        // application has a blue toolbar. Then, without quitting the app, try
-        // changing the primarySwatch below to Colors.green and then invoke
-        // "hot reload" (press "r" in the console where you ran "flutter run",
-        // or simply save your changes to "hot reload" in a Flutter IDE).
-        // Notice that the counter didn't reset back to zero; the application
-        // is not restarted.
         primarySwatch: Colors.pink,
       ),
-      home: SpeedListenerWidget(),
+      home: SpeedometerScaffold(),
       debugShowCheckedModeBanner: false,
     );
   }
 }
 
+@immutable
+class SpeedometerScaffold extends StatefulWidget {
+  bool unitsMetric = false;
+  bool showDigital = true;
+
+  @override
+  _SpeedometerScaffoldState createState() => _SpeedometerScaffoldState();
+}
+
+class _SpeedometerScaffoldState extends State<SpeedometerScaffold> {
+  String unitsTitle = 'Units';
+  String unitsSubtitle = "Metric / Imperial";
+  String showDigitalTitle = "Digital";
+
+  final scaffoldKey = GlobalKey<ScaffoldState>();
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: SpeedListenerWidget(
+        metric: this.widget.unitsMetric,
+        digital: this.widget.showDigital,
+      ),
+      drawer: Drawer(
+        elevation: 16,
+        child: Column(
+          mainAxisSize: MainAxisSize.max,
+          children: [
+            Expanded(
+                child: Icon(
+              Icons.settings_outlined,
+              color: Colors.black,
+              size: 24,
+            )),
+            SwitchListTile(
+              value: this.widget.unitsMetric,
+              onChanged: (newValue) =>
+                  setState(() => this.widget.unitsMetric = newValue),
+              title: Text(
+                unitsTitle,
+              ),
+              subtitle: Text(
+                unitsSubtitle,
+              ),
+              tileColor: Color(0xFFF5F5F5),
+              activeColor: Color(0xFFF5F5F5),
+              activeTrackColor: Colors.grey,
+              inactiveTrackColor: Colors.grey,
+              dense: false,
+              controlAffinity: ListTileControlAffinity.trailing,
+            ),
+            SwitchListTile(
+              value: this.widget.showDigital,
+              onChanged: (newValue) =>
+                  setState(() => this.widget.showDigital = newValue),
+              title: Text(
+                showDigitalTitle,
+              ),
+              tileColor: Color(0xFFF5F5F5),
+              activeColor: Color(0xFFF5F5F5),
+              activeTrackColor: Colors.grey,
+              inactiveTrackColor: Colors.grey,
+              dense: false,
+              controlAffinity: ListTileControlAffinity.trailing,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+@immutable
 class SpeedListenerWidget extends StatefulWidget {
-  SpeedListenerWidget({Key? key}) : super(key: key);
+  SpeedListenerWidget({Key? key, this.metric = false, this.digital = true})
+      : super(key: key);
+
+  final bool metric;
+  final bool digital;
+  late var speedReader;
+
   @override
   _SpeedListenerWidgetState createState() => _SpeedListenerWidgetState();
 }
 
 class _SpeedListenerWidgetState extends State<SpeedListenerWidget> {
-  var _display = '0';
+  var _display = '';
   var _speed = 0;
-  var _showMetric = false;
   var _fastestSpeedKPH = 0.0; // kilometers per hour;
-
-  late var _speedReader;
 
   @override
   void initState() {
     super.initState();
-    _speedReader = SpeedReader((final Position position) {
+
+    this.widget.speedReader = SpeedReader((final Position position) {
       setState(() {
         var speedKPH = msToKPH(position.speed);
-        _speed = (_showMetric ? speedKPH : kphToMPH(speedKPH)).abs().round();
+        _speed =
+            (this.widget.metric ? speedKPH : kphToMPH(speedKPH)).abs().round();
 
         // keep track of where we are
         // _lastPosition = position;
@@ -63,8 +133,13 @@ class _SpeedListenerWidgetState extends State<SpeedListenerWidget> {
         if (speedKPH > _fastestSpeedKPH) _fastestSpeedKPH = speedKPH;
 
         final String displaySpeed = _speed.toString();
-
-        _display = (_showMetric ? displaySpeed + 'km/h' : displaySpeed + 'MPH');
+        if (this.widget.digital) {
+          _display = (this.widget.metric
+              ? displaySpeed + 'km/h'
+              : displaySpeed + 'MPH');
+        } else {
+          _display = '';
+        }
 
         print(_display);
       });
@@ -73,7 +148,7 @@ class _SpeedListenerWidgetState extends State<SpeedListenerWidget> {
 
   @override
   void dispose() {
-    _speedReader.cancel();
+    this.widget.speedReader.cancel();
     super.dispose();
   }
 
