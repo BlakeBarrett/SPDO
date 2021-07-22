@@ -16,6 +16,12 @@
             "flutterMode": "profile"
         },
         {
+            "name": "SPDO (debug mode)",
+            "request": "launch",
+            "type": "dart",
+            "flutterMode": "debug"
+        },
+        {
             "name": "SPDO (release mode)",
             "request": "launch",
             "type": "dart",
