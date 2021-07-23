@@ -1,6 +1,8 @@
 import 'package:flutter/animation.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'speedreader.dart';
 import 'gauges/digital.dart';
 import 'gauges/analog.dart';
@@ -17,44 +19,148 @@ class SPDO_App extends StatelessWidget {
     return MaterialApp(
       title: 'SPDO',
       theme: ThemeData(
-        // This is the theme of your application.
-        //
-        // Try running your application with "flutter run". You'll see the
-        // application has a blue toolbar. Then, without quitting the app, try
-        // changing the primarySwatch below to Colors.green and then invoke
-        // "hot reload" (press "r" in the console where you ran "flutter run",
-        // or simply save your changes to "hot reload" in a Flutter IDE).
-        // Notice that the counter didn't reset back to zero; the application
-        // is not restarted.
         primarySwatch: Colors.pink,
       ),
-      home: SpeedListenerWidget(),
+      home: SpeedometerScaffold(),
       debugShowCheckedModeBanner: false,
     );
   }
 }
 
+@immutable
+class SpeedometerScaffold extends StatefulWidget {
+  @override
+  _SpeedometerScaffoldState createState() => _SpeedometerScaffoldState();
+}
+
+class _SpeedometerScaffoldState extends State<SpeedometerScaffold> {
+  final String displayMetric = "km/h";
+  final String displayImperial = "MPH";
+  String unitsSubtitle = "MPH | km/h";
+
+  bool unitsMetric = false;
+  bool showDigital = true;
+  bool showAnalog = true;
+
+  final sliderColor = Color(0xFFF5F5F5);
+  final scaffoldKey = GlobalKey<ScaffoldState>();
+
+  late final SharedPreferences prefs;
+
+  @override
+  void initState() {
+    super.initState();
+    loadPreferences();
+  }
+
+  void loadPreferences() async {
+    prefs = await SharedPreferences.getInstance();
+    unitsMetric = prefs.getBool('unitsMetric') ?? false;
+    showDigital = prefs.getBool('showDigital') ?? true;
+    showAnalog = prefs.getBool('showAnalog') ?? true;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: SpeedListenerWidget(
+        metric: unitsMetric,
+        digital: showDigital,
+        analog: showAnalog,
+      ),
+      drawer: Drawer(
+        elevation: 16,
+        child: Column(
+          mainAxisSize: MainAxisSize.max,
+          children: [
+            ListTile(
+                title: Icon(
+              Icons.settings_outlined,
+              color: Colors.black,
+              size: 24,
+            )),
+            SwitchListTile(
+              value: showAnalog,
+              onChanged: (newValue) => setState(() {
+                showAnalog = newValue;
+                prefs.setBool('showAnalog', newValue);
+              }),
+              secondary: SvgPicture.asset('assets/wiper.svg'),
+              tileColor: sliderColor,
+              activeColor: sliderColor,
+              activeTrackColor: Colors.grey,
+              inactiveTrackColor: Colors.grey,
+              dense: false,
+              controlAffinity: ListTileControlAffinity.trailing,
+            ),
+            SwitchListTile(
+              value: showDigital,
+              onChanged: (newValue) => setState(() {
+                showDigital = newValue;
+                prefs.setBool('showDigital', newValue);
+              }),
+              secondary: SvgPicture.asset('assets/numeric.svg'),
+              tileColor: sliderColor,
+              activeColor: sliderColor,
+              activeTrackColor: Colors.grey,
+              inactiveTrackColor: Colors.grey,
+              dense: false,
+              controlAffinity: ListTileControlAffinity.trailing,
+            ),
+            SwitchListTile(
+              value: unitsMetric,
+              onChanged: (newValue) => setState(() {
+                unitsMetric = newValue;
+                prefs.setBool('unitsMetric', newValue);
+              }),
+              title: Text(unitsSubtitle,
+                  style: TextStyle(fontWeight: FontWeight.bold)),
+              tileColor: sliderColor,
+              activeColor: sliderColor,
+              activeTrackColor: Colors.grey,
+              inactiveTrackColor: Colors.grey,
+              dense: false,
+              controlAffinity: ListTileControlAffinity.trailing,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+@immutable
 class SpeedListenerWidget extends StatefulWidget {
-  SpeedListenerWidget({Key? key}) : super(key: key);
+  SpeedListenerWidget(
+      {Key? key, this.metric = false, this.digital = true, this.analog = true})
+      : super(key: key);
+
+  final bool metric;
+  final bool digital;
+  final bool analog;
+  late final SpeedReader speedReader;
+
   @override
   _SpeedListenerWidgetState createState() => _SpeedListenerWidgetState();
 }
 
 class _SpeedListenerWidgetState extends State<SpeedListenerWidget> {
-  var _display = '0';
+  var _display = '';
   var _speed = 0;
-  var _showMetric = false;
   var _fastestSpeedKPH = 0.0; // kilometers per hour;
 
-  late var _speedReader;
+  final displayMetric = "km/h";
+  final displayImperial = "MPH";
 
   @override
   void initState() {
     super.initState();
-    _speedReader = SpeedReader((final Position position) {
+
+    this.widget.speedReader = SpeedReader((final Position position) {
       setState(() {
         var speedKPH = msToKPH(position.speed);
-        _speed = (_showMetric ? speedKPH : kphToMPH(speedKPH)).abs().round();
+        _speed =
+            (this.widget.metric ? speedKPH : kphToMPH(speedKPH)).abs().round();
 
         // keep track of where we are
         // _lastPosition = position;
@@ -63,8 +169,13 @@ class _SpeedListenerWidgetState extends State<SpeedListenerWidget> {
         if (speedKPH > _fastestSpeedKPH) _fastestSpeedKPH = speedKPH;
 
         final String displaySpeed = _speed.toString();
-
-        _display = (_showMetric ? displaySpeed + 'km/h' : displaySpeed + 'MPH');
+        if (this.widget.digital) {
+          _display = (this.widget.metric
+              ? displaySpeed + displayMetric
+              : displaySpeed + displayImperial);
+        } else {
+          _display = '';
+        }
 
         print(_display);
       });
@@ -73,7 +184,7 @@ class _SpeedListenerWidgetState extends State<SpeedListenerWidget> {
 
   @override
   void dispose() {
-    _speedReader.cancel();
+    this.widget.speedReader.cancel();
     super.dispose();
   }
 
@@ -89,15 +200,21 @@ class _SpeedListenerWidgetState extends State<SpeedListenerWidget> {
 
   @override
   Widget build(BuildContext context) {
-    return SpeedometerWidget(speed: _speed.toDouble(), display: _display);
+    return SpeedometerWidget(
+        speed: _speed.toDouble(),
+        display: _display,
+        analog: this.widget.analog);
   }
 }
 
 @immutable
 class SpeedometerWidget extends StatefulWidget {
-  SpeedometerWidget({required this.speed, required this.display}) : super();
+  SpeedometerWidget(
+      {required this.speed, required this.display, required this.analog})
+      : super();
   final double speed;
   final String display;
+  final bool analog;
 
   @override
   _SpeedometerWidgetState createState() => _SpeedometerWidgetState();
@@ -146,16 +263,18 @@ class _SpeedometerWidgetState extends State<SpeedometerWidget>
     if (_animation != null) {
       _speed = _animation!.value;
     }
+
+    List<Widget> _children = [];
+    if (this.widget.analog) {
+      _children.add(AnalogGauge(speed: _speed));
+    }
+    _children.add(Center(
+      child: DigitalGauge(value: widget.display),
+    ));
+
     return Scaffold(
       body: Center(
-        child: Stack(
-          children: <Widget>[
-            AnalogGauge(speed: _speed),
-            Center(
-              child: DigitalGauge(value: widget.display),
-            )
-          ],
-        ),
+        child: Stack(children: _children),
       ),
     );
   }
