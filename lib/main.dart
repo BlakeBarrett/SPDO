@@ -1,5 +1,3 @@
-// import 'dart:developer';
-
 import 'package:flutter/animation.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
@@ -29,63 +27,63 @@ class SPDO_App extends StatelessWidget {
 
 @immutable
 class SpeedometerScaffold extends StatefulWidget {
-  bool unitsMetric = false;
-  bool showDigital = true;
-
   @override
   _SpeedometerScaffoldState createState() => _SpeedometerScaffoldState();
 }
 
 class _SpeedometerScaffoldState extends State<SpeedometerScaffold> {
   String unitsTitle = 'Units';
-  String unitsSubtitle = "Metric / Imperial";
+  String unitsSubtitle = "Imperial / Metric";
   String showDigitalTitle = "Digital";
 
+  bool unitsMetric = false;
+  bool showDigital = true;
+
+  final sliderColor = Color(0xFFF5F5F5);
   final scaffoldKey = GlobalKey<ScaffoldState>();
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: SpeedListenerWidget(
-        metric: this.widget.unitsMetric,
-        digital: this.widget.showDigital,
+        metric: unitsMetric,
+        digital: showDigital,
       ),
       drawer: Drawer(
         elevation: 16,
         child: Column(
           mainAxisSize: MainAxisSize.max,
           children: [
-            Expanded(
-                child: Icon(
+            ListTile(
+                title: Icon(
               Icons.settings_outlined,
               color: Colors.black,
               size: 24,
             )),
             SwitchListTile(
-              value: this.widget.unitsMetric,
-              onChanged: (newValue) =>
-                  setState(() => this.widget.unitsMetric = newValue),
+              value: showDigital,
+              onChanged: (newValue) => setState(() => showDigital = newValue),
               title: Text(
-                unitsTitle,
+                showDigitalTitle,
               ),
-              subtitle: Text(
-                unitsSubtitle,
-              ),
-              tileColor: Color(0xFFF5F5F5),
-              activeColor: Color(0xFFF5F5F5),
+              tileColor: sliderColor,
+              activeColor: sliderColor,
               activeTrackColor: Colors.grey,
               inactiveTrackColor: Colors.grey,
               dense: false,
               controlAffinity: ListTileControlAffinity.trailing,
             ),
             SwitchListTile(
-              value: this.widget.showDigital,
-              onChanged: (newValue) =>
-                  setState(() => this.widget.showDigital = newValue),
+              value: unitsMetric,
+              onChanged: (newValue) => setState(() => unitsMetric = newValue),
               title: Text(
-                showDigitalTitle,
+                unitsTitle,
               ),
-              tileColor: Color(0xFFF5F5F5),
-              activeColor: Color(0xFFF5F5F5),
+              subtitle: Text(
+                unitsSubtitle,
+              ),
+              tileColor: sliderColor,
+              activeColor: sliderColor,
               activeTrackColor: Colors.grey,
               inactiveTrackColor: Colors.grey,
               dense: false,
@@ -105,7 +103,7 @@ class SpeedListenerWidget extends StatefulWidget {
 
   final bool metric;
   final bool digital;
-  late var speedReader;
+  late final SpeedReader speedReader;
 
   @override
   _SpeedListenerWidgetState createState() => _SpeedListenerWidgetState();
@@ -115,6 +113,9 @@ class _SpeedListenerWidgetState extends State<SpeedListenerWidget> {
   var _display = '';
   var _speed = 0;
   var _fastestSpeedKPH = 0.0; // kilometers per hour;
+
+  final displayMetric = "km/h";
+  final displayImperial = "MPH";
 
   @override
   void initState() {
@@ -135,8 +136,8 @@ class _SpeedListenerWidgetState extends State<SpeedListenerWidget> {
         final String displaySpeed = _speed.toString();
         if (this.widget.digital) {
           _display = (this.widget.metric
-              ? displaySpeed + 'km/h'
-              : displaySpeed + 'MPH');
+              ? displaySpeed + displayMetric
+              : displaySpeed + displayImperial);
         } else {
           _display = '';
         }
