@@ -36,7 +36,7 @@ class SpeedometerScaffold extends StatefulWidget {
 class _SpeedometerScaffoldState extends State<SpeedometerScaffold> {
   final String displayMetric = "km/h";
   final String displayImperial = "MPH";
-  String unitsSubtitle = "MPH / km/h";
+  String unitsSubtitle = "MPH | km/h";
 
   bool unitsMetric = false;
   bool showDigital = true;
@@ -113,9 +113,8 @@ class _SpeedometerScaffoldState extends State<SpeedometerScaffold> {
                 unitsMetric = newValue;
                 prefs.setBool('unitsMetric', newValue);
               }),
-              subtitle: Text(
-                unitsSubtitle,
-              ),
+              title: Text(unitsSubtitle,
+                  style: TextStyle(fontWeight: FontWeight.bold)),
               tileColor: sliderColor,
               activeColor: sliderColor,
               activeTrackColor: Colors.grey,
