@@ -1,6 +1,7 @@
 import 'package:flutter/animation.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'speedreader.dart';
 import 'gauges/digital.dart';
 import 'gauges/analog.dart';
@@ -42,6 +43,20 @@ class _SpeedometerScaffoldState extends State<SpeedometerScaffold> {
   final sliderColor = Color(0xFFF5F5F5);
   final scaffoldKey = GlobalKey<ScaffoldState>();
 
+  late final SharedPreferences prefs;
+
+  @override
+  void initState() {
+    super.initState();
+    loadPreferences();
+  }
+
+  void loadPreferences() async {
+    prefs = await SharedPreferences.getInstance();
+    unitsMetric = prefs.getBool('unitsMetric') ?? false;
+    showDigital = prefs.getBool('showDigital') ?? true;
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -62,7 +77,10 @@ class _SpeedometerScaffoldState extends State<SpeedometerScaffold> {
             )),
             SwitchListTile(
               value: showDigital,
-              onChanged: (newValue) => setState(() => showDigital = newValue),
+              onChanged: (newValue) => setState(() {
+                showDigital = newValue;
+                prefs.setBool('showDigital', newValue);
+              }),
               title: Text(
                 showDigitalTitle,
               ),
@@ -75,7 +93,10 @@ class _SpeedometerScaffoldState extends State<SpeedometerScaffold> {
             ),
             SwitchListTile(
               value: unitsMetric,
-              onChanged: (newValue) => setState(() => unitsMetric = newValue),
+              onChanged: (newValue) => setState(() {
+                unitsMetric = newValue;
+                prefs.setBool('unitsMetric', newValue);
+              }),
               title: Text(
                 unitsTitle,
               ),
