@@ -2,6 +2,7 @@ import 'package:flutter/animation.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'speedreader.dart';
 import 'gauges/digital.dart';
 import 'gauges/analog.dart';
@@ -33,12 +34,13 @@ class SpeedometerScaffold extends StatefulWidget {
 }
 
 class _SpeedometerScaffoldState extends State<SpeedometerScaffold> {
-  String unitsTitle = 'Units';
-  String unitsSubtitle = "Imperial / Metric";
-  String showDigitalTitle = "Digital";
+  final String displayMetric = "km/h";
+  final String displayImperial = "MPH";
+  String unitsSubtitle = "MPH / km/h";
 
   bool unitsMetric = false;
   bool showDigital = true;
+  bool showAnalog = true;
 
   final sliderColor = Color(0xFFF5F5F5);
   final scaffoldKey = GlobalKey<ScaffoldState>();
@@ -55,6 +57,7 @@ class _SpeedometerScaffoldState extends State<SpeedometerScaffold> {
     prefs = await SharedPreferences.getInstance();
     unitsMetric = prefs.getBool('unitsMetric') ?? false;
     showDigital = prefs.getBool('showDigital') ?? true;
+    showAnalog = prefs.getBool('showAnalog') ?? true;
   }
 
   @override
@@ -63,6 +66,7 @@ class _SpeedometerScaffoldState extends State<SpeedometerScaffold> {
       body: SpeedListenerWidget(
         metric: unitsMetric,
         digital: showDigital,
+        analog: showAnalog,
       ),
       drawer: Drawer(
         elevation: 16,
@@ -76,14 +80,26 @@ class _SpeedometerScaffoldState extends State<SpeedometerScaffold> {
               size: 24,
             )),
             SwitchListTile(
+              value: showAnalog,
+              onChanged: (newValue) => setState(() {
+                showAnalog = newValue;
+                prefs.setBool('showAnalog', newValue);
+              }),
+              secondary: SvgPicture.asset('assets/wiper.svg'),
+              tileColor: sliderColor,
+              activeColor: sliderColor,
+              activeTrackColor: Colors.grey,
+              inactiveTrackColor: Colors.grey,
+              dense: false,
+              controlAffinity: ListTileControlAffinity.trailing,
+            ),
+            SwitchListTile(
               value: showDigital,
               onChanged: (newValue) => setState(() {
                 showDigital = newValue;
                 prefs.setBool('showDigital', newValue);
               }),
-              title: Text(
-                showDigitalTitle,
-              ),
+              secondary: SvgPicture.asset('assets/numeric.svg'),
               tileColor: sliderColor,
               activeColor: sliderColor,
               activeTrackColor: Colors.grey,
@@ -97,9 +113,6 @@ class _SpeedometerScaffoldState extends State<SpeedometerScaffold> {
                 unitsMetric = newValue;
                 prefs.setBool('unitsMetric', newValue);
               }),
-              title: Text(
-                unitsTitle,
-              ),
               subtitle: Text(
                 unitsSubtitle,
               ),
@@ -119,11 +132,13 @@ class _SpeedometerScaffoldState extends State<SpeedometerScaffold> {
 
 @immutable
 class SpeedListenerWidget extends StatefulWidget {
-  SpeedListenerWidget({Key? key, this.metric = false, this.digital = true})
+  SpeedListenerWidget(
+      {Key? key, this.metric = false, this.digital = true, this.analog = true})
       : super(key: key);
 
   final bool metric;
   final bool digital;
+  final bool analog;
   late final SpeedReader speedReader;
 
   @override
@@ -186,15 +201,21 @@ class _SpeedListenerWidgetState extends State<SpeedListenerWidget> {
 
   @override
   Widget build(BuildContext context) {
-    return SpeedometerWidget(speed: _speed.toDouble(), display: _display);
+    return SpeedometerWidget(
+        speed: _speed.toDouble(),
+        display: _display,
+        analog: this.widget.analog);
   }
 }
 
 @immutable
 class SpeedometerWidget extends StatefulWidget {
-  SpeedometerWidget({required this.speed, required this.display}) : super();
+  SpeedometerWidget(
+      {required this.speed, required this.display, required this.analog})
+      : super();
   final double speed;
   final String display;
+  final bool analog;
 
   @override
   _SpeedometerWidgetState createState() => _SpeedometerWidgetState();
@@ -243,16 +264,18 @@ class _SpeedometerWidgetState extends State<SpeedometerWidget>
     if (_animation != null) {
       _speed = _animation!.value;
     }
+
+    List<Widget> _children = [];
+    if (this.widget.analog) {
+      _children.add(AnalogGauge(speed: _speed));
+    }
+    _children.add(Center(
+      child: DigitalGauge(value: widget.display),
+    ));
+
     return Scaffold(
       body: Center(
-        child: Stack(
-          children: <Widget>[
-            AnalogGauge(speed: _speed),
-            Center(
-              child: DigitalGauge(value: widget.display),
-            )
-          ],
-        ),
+        child: Stack(children: _children),
       ),
     );
   }
