@@ -33,7 +33,6 @@ dependencies:
   shared_preferences: ^2.0.6
   flutter_svg: ^0.22.0
   image_picker: ^0.8.2
-  permission_handler: ^8.1.4+1
   path_provider: ^2.0.2
 
 dev_dependencies:
