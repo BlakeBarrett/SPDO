@@ -10,9 +10,22 @@ class ImagePickerUtils {
     return await PathProvider.getApplicationSupportDirectory();
   }
 
+  static Future<File?> _getImageFile() async {
+    var directory = await _getDirectory();
+    if (!directory.existsSync()) {
+      return null;
+    }
+    var list = directory.listSync();
+    if (list.isEmpty) {
+      return null;
+    } else {
+      return File(list.first.path);
+    }
+  }
+
   static Future<Image?> getImage(context) async {
     var size = MediaQuery.of(context).size;
-    var imageFile = await getImageFile();
+    var imageFile = await _getImageFile();
     var exists = await imageFile?.exists() ?? false;
     if (exists && imageFile != null) {
       return Image.file(
@@ -23,19 +36,6 @@ class ImagePickerUtils {
       );
     } else {
       return null;
-    }
-  }
-
-  static Future<File?> getImageFile() async {
-    var directory = await _getDirectory();
-    if (!directory.existsSync()) {
-      return null;
-    }
-    var list = directory.listSync();
-    if (list.isEmpty) {
-      return null;
-    } else {
-      return File(list.first.path);
     }
   }
 
