@@ -10,12 +10,6 @@ class ImagePickerUtils {
     return await PathProvider.getApplicationSupportDirectory();
   }
 
-  static Future<bool> hasImage() async {
-    var image = await getImageFile();
-    var exists = await image?.exists() ?? false;
-    return exists;
-  }
-
   static Future<Image?> getImage(context) async {
     var size = MediaQuery.of(context).size;
     var imageFile = await getImageFile();
