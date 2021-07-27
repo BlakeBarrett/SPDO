@@ -1,8 +1,9 @@
 import 'package:flutter/animation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:flutter_svg/flutter_svg.dart';
+import 'image_picker_utils.dart';
 import 'speedreader.dart';
 import 'gauges/digital.dart';
 import 'gauges/analog.dart';
@@ -13,7 +14,6 @@ void main() {
 
 // ignore: camel_case_types
 class SPDO_App extends StatelessWidget {
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -122,6 +122,17 @@ class _SpeedometerScaffoldState extends State<SpeedometerScaffold> {
               dense: false,
               controlAffinity: ListTileControlAffinity.trailing,
             ),
+            ListTile(
+              title: Row(children: [
+                Icon(Icons.add_a_photo),
+                Spacer(),
+                IconButton(
+                  icon: Icon(Icons.clear),
+                  onPressed: () => ImagePickerUtils.clearImage(),
+                ),
+              ]),
+              onTap: () => ImagePickerUtils.browseForImage(),
+            ),
           ],
         ),
       ),
@@ -226,6 +237,7 @@ class _SpeedometerWidgetState extends State<SpeedometerWidget>
   late AnimationController? _animationController;
 
   late var speed = widget.speed;
+  Image? _background;
 
   @override
   void initState() {
@@ -259,18 +271,28 @@ class _SpeedometerWidgetState extends State<SpeedometerWidget>
 
   @override
   Widget build(BuildContext context) {
+    // Loading the background has to happen here, instead of in initState,
+    // because the context (which is used to query the screen size) is not
+    // available until build() is called.
+    ImagePickerUtils.getImage(context).then((value) => setState(() {
+          _background = value;
+        }));
+
     double _speed = widget.speed;
     if (_animation != null) {
       _speed = _animation!.value;
     }
 
     List<Widget> _children = [];
-    if (this.widget.analog) {
-      _children.add(AnalogGauge(speed: _speed));
+    if (_background != null) {
+      _children.add(Center(child: _background));
     }
     _children.add(Center(
       child: DigitalGauge(value: widget.display),
     ));
+    if (this.widget.analog) {
+      _children.add(AnalogGauge(speed: _speed));
+    }
 
     return Scaffold(
       body: Center(
