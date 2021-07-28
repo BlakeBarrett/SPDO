@@ -1,4 +1,4 @@
-name: SPDO
+name: spdo
 description: A minimalist speedometer app.
 
 # The following line prevents the package from being accidentally published to
