@@ -2,6 +2,7 @@ import 'package:flutter/animation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:package_info/package_info.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'image_picker_utils.dart';
 import 'speedreader.dart';
@@ -42,6 +43,8 @@ class _SpeedometerScaffoldState extends State<SpeedometerScaffold> {
   bool showDigital = true;
   bool showAnalog = true;
 
+  PackageInfo? packageInfo;
+
   final sliderColor = Color(0xFFF5F5F5);
   final scaffoldKey = GlobalKey<ScaffoldState>();
 
@@ -62,6 +65,12 @@ class _SpeedometerScaffoldState extends State<SpeedometerScaffold> {
 
   @override
   Widget build(BuildContext context) {
+    PackageInfo.fromPlatform().then((PackageInfo value) {
+      setState(() {
+        packageInfo = value;
+      });
+    });
+
     return Scaffold(
       body: SpeedListenerWidget(
         metric: unitsMetric,
@@ -132,6 +141,17 @@ class _SpeedometerScaffoldState extends State<SpeedometerScaffold> {
                 ),
               ]),
               onTap: () => ImagePickerUtils.browseForImage(),
+            ),
+            Spacer(),
+            AboutListTile(
+              applicationIcon: SvgPicture.asset(
+                'assets/icon.svg',
+                width: 48,
+                height: 48,
+              ),
+              applicationName: packageInfo?.appName,
+              applicationVersion:
+                  "${packageInfo?.version} build:${packageInfo?.buildNumber}",
             ),
           ],
         ),
