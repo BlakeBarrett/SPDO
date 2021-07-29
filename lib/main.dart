@@ -79,6 +79,7 @@ class _SpeedometerScaffoldState extends State<SpeedometerScaffold> {
         metric: unitsMetric,
         digital: showDigital,
         analog: showAnalog,
+        maxSpeed: maxSpeed,
       ),
       drawer: Drawer(
         elevation: 16,
@@ -210,12 +211,17 @@ class _SpeedometerScaffoldState extends State<SpeedometerScaffold> {
 @immutable
 class SpeedListenerWidget extends StatefulWidget {
   SpeedListenerWidget(
-      {Key? key, this.metric = false, this.digital = true, this.analog = true})
+      {Key? key,
+      this.metric = false,
+      this.digital = true,
+      this.analog = true,
+      this.maxSpeed = 90})
       : super(key: key);
 
   final bool metric;
   final bool digital;
   final bool analog;
+  final int maxSpeed;
   late final SpeedReader speedReader;
 
   @override
@@ -279,20 +285,26 @@ class _SpeedListenerWidgetState extends State<SpeedListenerWidget> {
   @override
   Widget build(BuildContext context) {
     return SpeedometerWidget(
-        speed: _speed.toDouble(),
-        display: _display,
-        analog: this.widget.analog);
+      speed: _speed.toDouble(),
+      display: _display,
+      analog: widget.analog,
+      maxSpeed: widget.maxSpeed,
+    );
   }
 }
 
 @immutable
 class SpeedometerWidget extends StatefulWidget {
   SpeedometerWidget(
-      {required this.speed, required this.display, required this.analog})
+      {required this.speed,
+      required this.display,
+      required this.analog,
+      required this.maxSpeed})
       : super();
   final double speed;
   final String display;
   final bool analog;
+  final int maxSpeed;
 
   @override
   _SpeedometerWidgetState createState() => _SpeedometerWidgetState();
@@ -350,20 +362,17 @@ class _SpeedometerWidgetState extends State<SpeedometerWidget>
       _speed = _animation!.value;
     }
 
-    List<Widget> _children = [];
-    if (_background != null) {
-      _children.add(Center(child: _background));
-    }
-    _children.add(Center(
-      child: DigitalGauge(value: widget.display),
-    ));
-    if (this.widget.analog) {
-      _children.add(AnalogGauge(speed: _speed));
-    }
-
     return Scaffold(
       body: Center(
-        child: Stack(children: _children),
+        child: Stack(children: [
+          if (_background != null) ...[Center(child: _background)],
+          Center(
+            child: DigitalGauge(value: widget.display),
+          ),
+          if (this.widget.analog) ...[
+            AnalogGauge(speed: _speed, maxSpeed: widget.maxSpeed)
+          ],
+        ]),
       ),
     );
   }
