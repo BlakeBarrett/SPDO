@@ -1,5 +1,6 @@
 import 'package:flutter/animation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:package_info/package_info.dart';
@@ -42,6 +43,7 @@ class _SpeedometerScaffoldState extends State<SpeedometerScaffold> {
   bool unitsMetric = false;
   bool showDigital = true;
   bool showAnalog = true;
+  int maxSpeed = 90;
 
   PackageInfo? packageInfo;
 
@@ -61,6 +63,7 @@ class _SpeedometerScaffoldState extends State<SpeedometerScaffold> {
     unitsMetric = prefs.getBool('unitsMetric') ?? false;
     showDigital = prefs.getBool('showDigital') ?? true;
     showAnalog = prefs.getBool('showAnalog') ?? true;
+    maxSpeed = prefs.getInt('maxSpeed') ?? 90;
   }
 
   @override
@@ -79,8 +82,7 @@ class _SpeedometerScaffoldState extends State<SpeedometerScaffold> {
       ),
       drawer: Drawer(
         elevation: 16,
-        child: Column(
-          mainAxisSize: MainAxisSize.max,
+        child: ListView(
           children: [
             ListTile(
                 title: Icon(
@@ -88,19 +90,16 @@ class _SpeedometerScaffoldState extends State<SpeedometerScaffold> {
               color: Colors.black,
               size: 24,
             )),
-            SwitchListTile(
-              value: showAnalog,
-              onChanged: (newValue) => setState(() {
-                showAnalog = newValue;
-                prefs.setBool('showAnalog', newValue);
-              }),
-              secondary: SvgPicture.asset('assets/wiper.svg'),
-              tileColor: sliderColor,
-              activeColor: sliderColor,
-              activeTrackColor: Colors.grey,
-              inactiveTrackColor: Colors.grey,
-              dense: false,
-              controlAffinity: ListTileControlAffinity.trailing,
+            ListTile(
+              title: Row(children: [
+                Icon(Icons.add_a_photo),
+                Spacer(),
+                IconButton(
+                  icon: Icon(Icons.clear),
+                  onPressed: () => ImagePickerUtils.clearImage(),
+                ),
+              ]),
+              onTap: () => ImagePickerUtils.browseForImage(),
             ),
             SwitchListTile(
               value: showDigital,
@@ -131,25 +130,73 @@ class _SpeedometerScaffoldState extends State<SpeedometerScaffold> {
               dense: false,
               controlAffinity: ListTileControlAffinity.trailing,
             ),
-            ListTile(
-              title: Row(children: [
-                Icon(Icons.add_a_photo),
-                Spacer(),
-                IconButton(
-                  icon: Icon(Icons.clear),
-                  onPressed: () => ImagePickerUtils.clearImage(),
-                ),
-              ]),
-              onTap: () => ImagePickerUtils.browseForImage(),
+            SwitchListTile(
+              value: showAnalog,
+              onChanged: (newValue) => setState(() {
+                showAnalog = newValue;
+                prefs.setBool('showAnalog', newValue);
+              }),
+              secondary: SvgPicture.asset('assets/wiper.svg'),
+              tileColor: sliderColor,
+              activeColor: sliderColor,
+              activeTrackColor: Colors.grey,
+              inactiveTrackColor: Colors.grey,
+              dense: false,
+              controlAffinity: ListTileControlAffinity.trailing,
             ),
-            Spacer(),
+            if (showAnalog) ...[
+              Padding(
+                padding: EdgeInsets.only(left: 16.0, right: 24.0),
+                child: Row(
+                  children: [
+                    SvgPicture.asset('assets/max-speed.svg',
+                        width: 24, height: 24),
+                    Spacer(),
+                    Text(
+                      "Max Speed",
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                    SizedBox(
+                      width: 48,
+                      height: 48,
+                      child: TextField(
+                        decoration: new InputDecoration(
+                            labelText: maxSpeed.toString(),
+                            contentPadding:
+                                EdgeInsets.only(left: 12.0, right: 12.0)),
+                        keyboardType: TextInputType.number,
+                        inputFormatters: [
+                          FilteringTextInputFormatter.digitsOnly,
+                        ], // Only numbers can be entered
+                        onChanged: (newValue) => setState(() {
+                          maxSpeed = int.parse(newValue);
+                          prefs.setInt("maxSpeed", maxSpeed);
+                        }),
+                      ),
+                    ),
+                    Text(
+                      unitsMetric ? "km/h" : "MPH",
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    )
+                  ],
+                ),
+              ),
+            ] else ...[
+              Row(
+                children: [
+                  Padding(
+                    padding: EdgeInsets.all(24.0),
+                  )
+                ],
+              ),
+            ],
             AboutListTile(
               applicationIcon: SvgPicture.asset(
                 'assets/icon.svg',
                 width: 48,
                 height: 48,
               ),
-              applicationName: packageInfo?.appName,
+              applicationName: "SPDO",
               applicationVersion:
                   "${packageInfo?.version} build:${packageInfo?.buildNumber}",
             ),
