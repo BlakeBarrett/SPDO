@@ -69,7 +69,9 @@ class _SpeedometerScaffoldState extends State<SpeedometerScaffold> {
 
   void loadPlatformInfo() {
     PackageInfo.fromPlatform().then((PackageInfo value) {
-      packageInfo = value;
+      setState(() {
+        packageInfo = value;
+      });
     });
   }
 
