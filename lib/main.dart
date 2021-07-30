@@ -46,35 +46,90 @@ class _SpeedometerScaffoldState extends State<SpeedometerScaffold> {
   int maxSpeed = 90;
 
   PackageInfo? packageInfo;
+  SharedPreferences? prefs;
 
   final sliderColor = Color(0xFFF5F5F5);
   final scaffoldKey = GlobalKey<ScaffoldState>();
-
-  late final SharedPreferences prefs;
+  final iconSize = 24.0;
 
   @override
   void initState() {
     super.initState();
     loadPreferences();
+    loadPlatformInfo();
   }
 
   void loadPreferences() async {
     prefs = await SharedPreferences.getInstance();
-    unitsMetric = prefs.getBool('unitsMetric') ?? false;
-    showDigital = prefs.getBool('showDigital') ?? true;
-    showAnalog = prefs.getBool('showAnalog') ?? true;
-    maxSpeed = prefs.getInt('maxSpeed') ?? 90;
+    unitsMetric = prefs?.getBool('unitsMetric') ?? false;
+    showDigital = prefs?.getBool('showDigital') ?? true;
+    showAnalog = prefs?.getBool('showAnalog') ?? true;
+    maxSpeed = prefs?.getInt('maxSpeed') ?? maxSpeed;
+  }
+
+  void loadPlatformInfo() {
+    PackageInfo.fromPlatform().then((PackageInfo value) {
+      packageInfo = value;
+    });
+  }
+
+  Widget maxSpeedEditWidget(Widget widgetInQuestion) {
+    return Padding(
+        padding: EdgeInsets.only(left: 16.0, right: 24.0),
+        child: Row(
+          children: [
+            SvgPicture.asset('assets/max-speed.svg',
+                width: iconSize, height: iconSize),
+            Spacer(),
+            Text(
+              "Max Speed",
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
+            SizedBox(
+                width: iconSize * 2,
+                height: iconSize * 2,
+                child: widgetInQuestion),
+            Text(
+              unitsMetric ? "km/h" : "MPH",
+              style: TextStyle(fontWeight: FontWeight.bold),
+            )
+          ],
+        ));
+  }
+
+  void showEditPopup(BuildContext context) {
+    var popup = SimpleDialog(
+      children: [
+        maxSpeedEditWidget(
+          TextField(
+            decoration: new InputDecoration(
+                labelText: maxSpeed.toString(),
+                contentPadding: EdgeInsets.only(left: 12.0, right: 12.0)),
+            keyboardType: TextInputType.number,
+            inputFormatters: [
+              FilteringTextInputFormatter.digitsOnly,
+            ], // Only numbers can be entered
+            onChanged: (newValue) => setState(() {
+              maxSpeed = int.parse(newValue);
+              prefs?.setInt("maxSpeed", maxSpeed.toInt());
+            }),
+          ),
+        )
+      ],
+    );
+    showDialog(context: context, builder: (context) => popup);
   }
 
   @override
   Widget build(BuildContext context) {
-    PackageInfo.fromPlatform().then((PackageInfo value) {
-      setState(() {
-        packageInfo = value;
-      });
-    });
+    // Wait until we've actually finished loading everything we need.
+    if (packageInfo == null || prefs == null) {
+      return Column();
+    }
 
     return Scaffold(
+      backgroundColor: sliderColor,
+      resizeToAvoidBottomInset: false,
       body: SpeedListenerWidget(
         metric: unitsMetric,
         digital: showDigital,
@@ -82,14 +137,14 @@ class _SpeedometerScaffoldState extends State<SpeedometerScaffold> {
         maxSpeed: maxSpeed,
       ),
       drawer: Drawer(
-        elevation: 16,
         child: ListView(
+          keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
           children: [
             ListTile(
                 title: Icon(
               Icons.settings_outlined,
               color: Colors.black,
-              size: 24,
+              size: iconSize,
             )),
             ListTile(
               title: Row(children: [
@@ -106,7 +161,7 @@ class _SpeedometerScaffoldState extends State<SpeedometerScaffold> {
               value: showDigital,
               onChanged: (newValue) => setState(() {
                 showDigital = newValue;
-                prefs.setBool('showDigital', newValue);
+                prefs?.setBool('showDigital', newValue);
               }),
               secondary: SvgPicture.asset('assets/numeric.svg'),
               tileColor: sliderColor,
@@ -120,7 +175,7 @@ class _SpeedometerScaffoldState extends State<SpeedometerScaffold> {
               value: unitsMetric,
               onChanged: (newValue) => setState(() {
                 unitsMetric = newValue;
-                prefs.setBool('unitsMetric', newValue);
+                prefs?.setBool('unitsMetric', newValue);
               }),
               title: Text(unitsSubtitle,
                   style: TextStyle(fontWeight: FontWeight.bold)),
@@ -135,7 +190,7 @@ class _SpeedometerScaffoldState extends State<SpeedometerScaffold> {
               value: showAnalog,
               onChanged: (newValue) => setState(() {
                 showAnalog = newValue;
-                prefs.setBool('showAnalog', newValue);
+                prefs?.setBool('showAnalog', newValue);
               }),
               secondary: SvgPicture.asset('assets/wiper.svg'),
               tileColor: sliderColor,
@@ -146,47 +201,16 @@ class _SpeedometerScaffoldState extends State<SpeedometerScaffold> {
               controlAffinity: ListTileControlAffinity.trailing,
             ),
             if (showAnalog) ...[
-              Padding(
-                padding: EdgeInsets.only(left: 16.0, right: 24.0),
-                child: Row(
-                  children: [
-                    SvgPicture.asset('assets/max-speed.svg',
-                        width: 24, height: 24),
-                    Spacer(),
-                    Text(
-                      "Max Speed",
-                      style: TextStyle(fontWeight: FontWeight.bold),
-                    ),
-                    SizedBox(
-                      width: 48,
-                      height: 48,
-                      child: TextField(
-                        decoration: new InputDecoration(
-                            labelText: maxSpeed.toString(),
-                            contentPadding:
-                                EdgeInsets.only(left: 12.0, right: 12.0)),
-                        keyboardType: TextInputType.number,
-                        inputFormatters: [
-                          FilteringTextInputFormatter.digitsOnly,
-                        ], // Only numbers can be entered
-                        onChanged: (newValue) => setState(() {
-                          maxSpeed = int.parse(newValue);
-                          prefs.setInt("maxSpeed", maxSpeed);
-                        }),
-                      ),
-                    ),
-                    Text(
-                      unitsMetric ? "km/h" : "MPH",
-                      style: TextStyle(fontWeight: FontWeight.bold),
-                    )
-                  ],
-                ),
-              ),
+              maxSpeedEditWidget(TextButton(
+                autofocus: true,
+                child: Text(maxSpeed.toString()),
+                onPressed: () => showEditPopup(context),
+              ))
             ] else ...[
               Row(
                 children: [
                   Padding(
-                    padding: EdgeInsets.all(24.0),
+                    padding: EdgeInsets.all(iconSize.toDouble()),
                   )
                 ],
               ),
@@ -194,8 +218,8 @@ class _SpeedometerScaffoldState extends State<SpeedometerScaffold> {
             AboutListTile(
               applicationIcon: SvgPicture.asset(
                 'assets/icon.svg',
-                width: 48,
-                height: 48,
+                width: iconSize * 2,
+                height: iconSize * 2,
               ),
               applicationName: "SPDO",
               applicationVersion:
@@ -215,7 +239,7 @@ class SpeedListenerWidget extends StatefulWidget {
       this.metric = false,
       this.digital = true,
       this.analog = true,
-      this.maxSpeed = 90})
+      required this.maxSpeed})
       : super(key: key);
 
   final bool metric;
@@ -323,8 +347,8 @@ class _SpeedometerWidgetState extends State<SpeedometerWidget>
     super.initState();
     _animationController = new AnimationController(
         duration: const Duration(seconds: 1), vsync: this);
-    _animation =
-        Tween<double>(begin: 0, end: 100.0).animate(_animationController!)
+    _animation = Tween<double>(begin: 0, end: widget.maxSpeed * 1.1)
+        .animate(_animationController!)
           ..addListener(() {
             setState(() {
               speed = _animation!.value;
