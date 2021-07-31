@@ -8,6 +8,7 @@ class AnalogGauge extends StatelessWidget {
       required this.maxSpeed,
       this.color = Colors.redAccent})
       : super();
+
   final double speed;
   final int maxSpeed;
   final Color color;
