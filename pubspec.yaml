@@ -63,6 +63,7 @@ flutter:
     - assets/wiper.svg
     - assets/icon.svg
     - assets/max-speed.svg
+    - assets/car-cruise-control.svg
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware.
