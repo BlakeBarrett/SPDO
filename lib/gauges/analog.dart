@@ -3,7 +3,7 @@ import 'dart:math' as math;
 
 @immutable
 class AnalogGauge extends StatelessWidget {
-  AnalogGauge({required final this.speed, final this.maxSpeed = 90}) : super();
+  AnalogGauge({required final this.speed, required this.maxSpeed}) : super();
   final double speed;
   final int maxSpeed;
 

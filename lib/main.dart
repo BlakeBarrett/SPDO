@@ -1,13 +1,15 @@
 import 'package:flutter/animation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:package_info/package_info.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+
+import 'gauges/analog.dart';
+import 'gauges/digital.dart';
 import 'image_picker_utils.dart';
 import 'speedreader.dart';
-import 'gauges/digital.dart';
-import 'gauges/analog.dart';
 
 void main() {
   runApp(SPDO_App());
@@ -42,117 +44,214 @@ class _SpeedometerScaffoldState extends State<SpeedometerScaffold> {
   bool unitsMetric = false;
   bool showDigital = true;
   bool showAnalog = true;
+  int maxSpeed = 90;
 
   PackageInfo? packageInfo;
+  SharedPreferences? prefs;
 
   final sliderColor = Color(0xFFF5F5F5);
   final scaffoldKey = GlobalKey<ScaffoldState>();
-
-  late final SharedPreferences prefs;
+  final iconSize = 24.0;
 
   @override
   void initState() {
     super.initState();
     loadPreferences();
+    loadPlatformInfo();
   }
 
   void loadPreferences() async {
     prefs = await SharedPreferences.getInstance();
-    unitsMetric = prefs.getBool('unitsMetric') ?? false;
-    showDigital = prefs.getBool('showDigital') ?? true;
-    showAnalog = prefs.getBool('showAnalog') ?? true;
+    unitsMetric = prefs?.getBool('unitsMetric') ?? false;
+    showDigital = prefs?.getBool('showDigital') ?? true;
+    showAnalog = prefs?.getBool('showAnalog') ?? true;
+    maxSpeed = prefs?.getInt('maxSpeed') ?? maxSpeed;
   }
 
-  @override
-  Widget build(BuildContext context) {
+  void loadPlatformInfo() {
     PackageInfo.fromPlatform().then((PackageInfo value) {
       setState(() {
         packageInfo = value;
       });
     });
+  }
+
+  Widget backgroundChooserWidget() {
+    return ListTile(
+      title: Row(children: [
+        Icon(Icons.add_a_photo),
+        Spacer(),
+        IconButton(
+          icon: Icon(Icons.clear),
+          onPressed: () => ImagePickerUtils.clearImage(),
+        ),
+      ]),
+      onTap: () => ImagePickerUtils.browseForImage(),
+    );
+  }
+
+  Widget unitSelectionWidget() {
+    return SwitchListTile(
+      value: unitsMetric,
+      onChanged: (newValue) => setState(() {
+        unitsMetric = newValue;
+        prefs?.setBool('unitsMetric', newValue);
+      }),
+      title: Text(unitsSubtitle, style: TextStyle(fontWeight: FontWeight.bold)),
+      tileColor: sliderColor,
+      activeColor: sliderColor,
+      activeTrackColor: Colors.grey,
+      inactiveTrackColor: Colors.grey,
+      dense: false,
+      controlAffinity: ListTileControlAffinity.trailing,
+    );
+  }
+
+  Widget digitalSpeedWidget() {
+    return SwitchListTile(
+      value: showDigital,
+      onChanged: (newValue) => setState(() {
+        showDigital = newValue;
+        prefs?.setBool('showDigital', newValue);
+      }),
+      secondary: SvgPicture.asset('assets/numeric.svg'),
+      tileColor: sliderColor,
+      activeColor: sliderColor,
+      activeTrackColor: Colors.grey,
+      inactiveTrackColor: Colors.grey,
+      dense: false,
+      controlAffinity: ListTileControlAffinity.trailing,
+    );
+  }
+
+  Widget analogSpeedWidget() {
+    return SwitchListTile(
+      value: showAnalog,
+      onChanged: (newValue) => setState(() {
+        showAnalog = newValue;
+        prefs?.setBool('showAnalog', newValue);
+      }),
+      secondary: SvgPicture.asset('assets/wiper.svg'),
+      tileColor: sliderColor,
+      activeColor: sliderColor,
+      activeTrackColor: Colors.grey,
+      inactiveTrackColor: Colors.grey,
+      dense: false,
+      controlAffinity: ListTileControlAffinity.trailing,
+    );
+  }
+
+  Widget maxSpeedEditWidget(Widget actionWidget) {
+    return Padding(
+        padding: EdgeInsets.only(left: 16.0, right: 24.0),
+        child: Row(
+          children: [
+            SvgPicture.asset('assets/max-speed.svg',
+                width: iconSize, height: iconSize),
+            Spacer(),
+            Text(
+              "Max Speed",
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
+            SizedBox(
+                width: iconSize * 2, height: iconSize * 2, child: actionWidget),
+            Text(
+              unitsMetric ? "km/h" : "MPH",
+              style: TextStyle(fontWeight: FontWeight.bold),
+            )
+          ],
+        ));
+  }
+
+  void showEditPopup(BuildContext context) {
+    var popup = SimpleDialog(
+      children: [
+        maxSpeedEditWidget(
+          TextField(
+            decoration: new InputDecoration(
+                labelText: maxSpeed.toString(),
+                contentPadding: EdgeInsets.only(left: 12.0, right: 12.0)),
+            keyboardType: TextInputType.number,
+            inputFormatters: [
+              FilteringTextInputFormatter.digitsOnly,
+            ], // Only numbers can be entered
+            onChanged: (newValue) => setState(() {
+              maxSpeed = int.parse(newValue);
+              prefs?.setInt("maxSpeed", maxSpeed.toInt());
+            }),
+          ),
+        )
+      ],
+    );
+    showDialog(context: context, builder: (context) => popup);
+  }
+
+  Widget maxSpeedWidget() {
+    if (showAnalog) {
+      return maxSpeedEditWidget(TextButton(
+        autofocus: true,
+        child: Text(maxSpeed.toString()),
+        onPressed: () => showEditPopup(context),
+      ));
+    } else {
+      return Row(children: [
+        Padding(
+          padding: EdgeInsets.all(iconSize.toDouble()),
+        )
+      ]);
+    }
+  }
+
+  Widget aboutWidget() {
+    return AboutListTile(
+      applicationIcon: SvgPicture.asset(
+        'assets/icon.svg',
+        width: iconSize * 2,
+        height: iconSize * 2,
+      ),
+      applicationName: "SPDO",
+      applicationVersion:
+          "${packageInfo?.version} build:${packageInfo?.buildNumber}",
+      aboutBoxChildren: [
+        Center(
+          child: Text("It's a speedometer."),
+        ),
+      ],
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    // Wait until we've actually finished loading everything we need.
+    if (packageInfo == null || prefs == null) {
+      return Column();
+    }
 
     return Scaffold(
+      backgroundColor: sliderColor,
+      resizeToAvoidBottomInset: false,
       body: SpeedListenerWidget(
         metric: unitsMetric,
         digital: showDigital,
         analog: showAnalog,
+        maxSpeed: maxSpeed,
       ),
       drawer: Drawer(
-        elevation: 16,
-        child: Column(
-          mainAxisSize: MainAxisSize.max,
+        child: ListView(
+          keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
           children: [
             ListTile(
                 title: Icon(
               Icons.settings_outlined,
               color: Colors.black,
-              size: 24,
+              size: iconSize,
             )),
-            SwitchListTile(
-              value: showAnalog,
-              onChanged: (newValue) => setState(() {
-                showAnalog = newValue;
-                prefs.setBool('showAnalog', newValue);
-              }),
-              secondary: SvgPicture.asset('assets/wiper.svg'),
-              tileColor: sliderColor,
-              activeColor: sliderColor,
-              activeTrackColor: Colors.grey,
-              inactiveTrackColor: Colors.grey,
-              dense: false,
-              controlAffinity: ListTileControlAffinity.trailing,
-            ),
-            SwitchListTile(
-              value: showDigital,
-              onChanged: (newValue) => setState(() {
-                showDigital = newValue;
-                prefs.setBool('showDigital', newValue);
-              }),
-              secondary: SvgPicture.asset('assets/numeric.svg'),
-              tileColor: sliderColor,
-              activeColor: sliderColor,
-              activeTrackColor: Colors.grey,
-              inactiveTrackColor: Colors.grey,
-              dense: false,
-              controlAffinity: ListTileControlAffinity.trailing,
-            ),
-            SwitchListTile(
-              value: unitsMetric,
-              onChanged: (newValue) => setState(() {
-                unitsMetric = newValue;
-                prefs.setBool('unitsMetric', newValue);
-              }),
-              title: Text(unitsSubtitle,
-                  style: TextStyle(fontWeight: FontWeight.bold)),
-              tileColor: sliderColor,
-              activeColor: sliderColor,
-              activeTrackColor: Colors.grey,
-              inactiveTrackColor: Colors.grey,
-              dense: false,
-              controlAffinity: ListTileControlAffinity.trailing,
-            ),
-            ListTile(
-              title: Row(children: [
-                Icon(Icons.add_a_photo),
-                Spacer(),
-                IconButton(
-                  icon: Icon(Icons.clear),
-                  onPressed: () => ImagePickerUtils.clearImage(),
-                ),
-              ]),
-              onTap: () => ImagePickerUtils.browseForImage(),
-            ),
-            Spacer(),
-            AboutListTile(
-              applicationIcon: SvgPicture.asset(
-                'assets/icon.svg',
-                width: 48,
-                height: 48,
-              ),
-              applicationName: packageInfo?.appName,
-              applicationVersion:
-                  "${packageInfo?.version} build:${packageInfo?.buildNumber}",
-            ),
+            backgroundChooserWidget(),
+            unitSelectionWidget(),
+            digitalSpeedWidget(),
+            analogSpeedWidget(),
+            maxSpeedWidget(),
+            aboutWidget(),
           ],
         ),
       ),
@@ -163,12 +262,17 @@ class _SpeedometerScaffoldState extends State<SpeedometerScaffold> {
 @immutable
 class SpeedListenerWidget extends StatefulWidget {
   SpeedListenerWidget(
-      {Key? key, this.metric = false, this.digital = true, this.analog = true})
+      {Key? key,
+      this.metric = false,
+      this.digital = true,
+      this.analog = true,
+      required this.maxSpeed})
       : super(key: key);
 
   final bool metric;
   final bool digital;
   final bool analog;
+  final int maxSpeed;
   late final SpeedReader speedReader;
 
   @override
@@ -232,20 +336,26 @@ class _SpeedListenerWidgetState extends State<SpeedListenerWidget> {
   @override
   Widget build(BuildContext context) {
     return SpeedometerWidget(
-        speed: _speed.toDouble(),
-        display: _display,
-        analog: this.widget.analog);
+      speed: _speed.toDouble(),
+      display: _display,
+      analog: widget.analog,
+      maxSpeed: widget.maxSpeed,
+    );
   }
 }
 
 @immutable
 class SpeedometerWidget extends StatefulWidget {
   SpeedometerWidget(
-      {required this.speed, required this.display, required this.analog})
+      {required this.speed,
+      required this.display,
+      required this.analog,
+      required this.maxSpeed})
       : super();
   final double speed;
   final String display;
   final bool analog;
+  final int maxSpeed;
 
   @override
   _SpeedometerWidgetState createState() => _SpeedometerWidgetState();
@@ -264,8 +374,8 @@ class _SpeedometerWidgetState extends State<SpeedometerWidget>
     super.initState();
     _animationController = new AnimationController(
         duration: const Duration(seconds: 1), vsync: this);
-    _animation =
-        Tween<double>(begin: 0, end: 100.0).animate(_animationController!)
+    _animation = Tween<double>(begin: 0, end: widget.maxSpeed * 1.1)
+        .animate(_animationController!)
           ..addListener(() {
             setState(() {
               speed = _animation!.value;
@@ -289,6 +399,22 @@ class _SpeedometerWidgetState extends State<SpeedometerWidget>
     super.dispose();
   }
 
+  Widget settingsDrawerDisclosureIcon() {
+    return Positioned(
+        bottom: 0.0,
+        left: 0.0,
+        child: Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: new IconButton(
+            icon: Icon(
+              Icons.settings,
+              color: Colors.black12,
+            ),
+            onPressed: () => Scaffold.of(context).openDrawer(),
+          ),
+        ));
+  }
+
   @override
   Widget build(BuildContext context) {
     // Loading the background has to happen here, instead of in initState,
@@ -298,25 +424,20 @@ class _SpeedometerWidgetState extends State<SpeedometerWidget>
           _background = value;
         }));
 
-    double _speed = widget.speed;
-    if (_animation != null) {
-      _speed = _animation!.value;
-    }
-
-    List<Widget> _children = [];
-    if (_background != null) {
-      _children.add(Center(child: _background));
-    }
-    _children.add(Center(
-      child: DigitalGauge(value: widget.display),
-    ));
-    if (this.widget.analog) {
-      _children.add(AnalogGauge(speed: _speed));
-    }
+    double _speed = (_animation != null) ? _animation!.value : widget.speed;
 
     return Scaffold(
       body: Center(
-        child: Stack(children: _children),
+        child: Stack(children: [
+          if (_background != null) ...[Center(child: _background)],
+          settingsDrawerDisclosureIcon(),
+          Center(
+            child: DigitalGauge(value: widget.display),
+          ),
+          if (this.widget.analog) ...[
+            AnalogGauge(speed: _speed, maxSpeed: widget.maxSpeed)
+          ],
+        ]),
       ),
     );
   }
