@@ -19,4 +19,4 @@ A very simple speedometer app written in [Flutter](https://flutter.dev).
    * Run the flutter_launcher_icon generator: `flutter pub run flutter_launcher_icons:main`
 
 ## Action Shot
-![IMG_1556](https://user-images.githubusercontent.com/578572/125177886-59076b80-e194-11eb-9aaa-37fbce5c7935.PNG)
+![E7lzoBrUUAEMSgj](https://user-images.githubusercontent.com/578572/127730378-ad62ea17-7ad8-48e8-b3fe-2862e96d297e.jpeg)
