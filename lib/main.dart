@@ -44,6 +44,7 @@ class _SpeedometerScaffoldState extends State<SpeedometerScaffold> {
   bool unitsMetric = false;
   bool showDigital = true;
   bool showAnalog = true;
+  bool showTopSpeed = false;
   int maxSpeed = 90;
 
   PackageInfo? packageInfo;
@@ -66,6 +67,7 @@ class _SpeedometerScaffoldState extends State<SpeedometerScaffold> {
     showDigital = prefs?.getBool('showDigital') ?? true;
     showAnalog = prefs?.getBool('showAnalog') ?? true;
     maxSpeed = prefs?.getInt('maxSpeed') ?? maxSpeed;
+    showTopSpeed = prefs?.getBool('showTopSpeed') ?? false;
   }
 
   void loadPlatformInfo() {
@@ -131,7 +133,7 @@ class _SpeedometerScaffoldState extends State<SpeedometerScaffold> {
         showAnalog = newValue;
         prefs?.setBool('showAnalog', newValue);
       }),
-      secondary: SvgPicture.asset('assets/wiper.svg'),
+      secondary: SvgPicture.asset('assets/wiper.svg', color: Colors.red),
       tileColor: sliderColor,
       activeColor: sliderColor,
       activeTrackColor: Colors.grey,
@@ -147,7 +149,7 @@ class _SpeedometerScaffoldState extends State<SpeedometerScaffold> {
         child: Row(
           children: [
             SvgPicture.asset('assets/max-speed.svg',
-                width: iconSize, height: iconSize),
+                width: iconSize, height: iconSize, color: Colors.red),
             Spacer(),
             Text(
               "Max Speed",
@@ -202,6 +204,26 @@ class _SpeedometerScaffoldState extends State<SpeedometerScaffold> {
     }
   }
 
+  Widget topSpeedWidget() {
+    return SwitchListTile(
+      value: showTopSpeed,
+      onChanged: (newValue) => setState(() {
+        showTopSpeed = newValue;
+        prefs?.setBool('showTopSpeed', newValue);
+      }),
+      secondary: SvgPicture.asset(
+        'assets/car-cruise-control.svg',
+        color: Colors.green,
+      ),
+      tileColor: sliderColor,
+      activeColor: sliderColor,
+      activeTrackColor: Colors.grey,
+      inactiveTrackColor: Colors.grey,
+      dense: false,
+      controlAffinity: ListTileControlAffinity.trailing,
+    );
+  }
+
   Widget aboutWidget() {
     return AboutListTile(
       applicationIcon: SvgPicture.asset(
@@ -235,22 +257,18 @@ class _SpeedometerScaffoldState extends State<SpeedometerScaffold> {
         digital: showDigital,
         analog: showAnalog,
         maxSpeed: maxSpeed,
+        showTopSpeed: showTopSpeed,
       ),
       drawer: Drawer(
         child: ListView(
           keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
           children: [
-            ListTile(
-                title: Icon(
-              Icons.settings_outlined,
-              color: Colors.black,
-              size: iconSize,
-            )),
             backgroundChooserWidget(),
             unitSelectionWidget(),
             digitalSpeedWidget(),
             analogSpeedWidget(),
             maxSpeedWidget(),
+            topSpeedWidget(),
             aboutWidget(),
           ],
         ),
@@ -266,13 +284,15 @@ class SpeedListenerWidget extends StatefulWidget {
       this.metric = false,
       this.digital = true,
       this.analog = true,
-      required this.maxSpeed})
+      required this.maxSpeed,
+      this.showTopSpeed = false})
       : super(key: key);
 
   final bool metric;
   final bool digital;
   final bool analog;
   final int maxSpeed;
+  final bool showTopSpeed;
   late final SpeedReader speedReader;
 
   @override
@@ -282,7 +302,6 @@ class SpeedListenerWidget extends StatefulWidget {
 class _SpeedListenerWidgetState extends State<SpeedListenerWidget> {
   var _display = '';
   var _speed = 0;
-  var _fastestSpeedKPH = 0.0; // kilometers per hour;
 
   final displayMetric = "km/h";
   final displayImperial = "MPH";
@@ -297,17 +316,12 @@ class _SpeedListenerWidgetState extends State<SpeedListenerWidget> {
         _speed =
             (this.widget.metric ? speedKPH : kphToMPH(speedKPH)).abs().round();
 
-        // keep track of where we are
-        // _lastPosition = position;
-
-        // update the high-score
-        if (speedKPH > _fastestSpeedKPH) _fastestSpeedKPH = speedKPH;
-
         final String displaySpeed = _speed.toString();
+        var suffix =
+            (widget.metric ? this.displayMetric : this.displayImperial);
+
         if (this.widget.digital) {
-          _display = (this.widget.metric
-              ? displaySpeed + displayMetric
-              : displaySpeed + displayImperial);
+          _display = displaySpeed + suffix;
         } else {
           _display = '';
         }
@@ -340,6 +354,7 @@ class _SpeedListenerWidgetState extends State<SpeedListenerWidget> {
       display: _display,
       analog: widget.analog,
       maxSpeed: widget.maxSpeed,
+      showTopSpeed: widget.showTopSpeed,
     );
   }
 }
@@ -350,12 +365,14 @@ class SpeedometerWidget extends StatefulWidget {
       {required this.speed,
       required this.display,
       required this.analog,
-      required this.maxSpeed})
+      required this.maxSpeed,
+      this.showTopSpeed = false})
       : super();
   final double speed;
   final String display;
   final bool analog;
   final int maxSpeed;
+  final bool showTopSpeed;
 
   @override
   _SpeedometerWidgetState createState() => _SpeedometerWidgetState();
@@ -366,7 +383,8 @@ class _SpeedometerWidgetState extends State<SpeedometerWidget>
   late Animation<double>? _animation;
   late AnimationController? _animationController;
 
-  late var speed = widget.speed;
+  var _speed = 0.0;
+  var _topSpeed = 0.0;
   Image? _background;
 
   @override
@@ -378,7 +396,7 @@ class _SpeedometerWidgetState extends State<SpeedometerWidget>
         .animate(_animationController!)
           ..addListener(() {
             setState(() {
-              speed = _animation!.value;
+              _speed = _animation!.value;
             });
           });
     _animationController?.addStatusListener((status) {
@@ -424,21 +442,37 @@ class _SpeedometerWidgetState extends State<SpeedometerWidget>
           _background = value;
         }));
 
-    double _speed = (_animation != null) ? _animation!.value : widget.speed;
+    if (_topSpeed < widget.speed) {
+      _topSpeed = widget.speed;
+    }
+    _speed = (_animation != null) ? _animation!.value : widget.speed;
 
-    return Scaffold(
-      body: Center(
-        child: Stack(children: [
-          if (_background != null) ...[Center(child: _background)],
-          settingsDrawerDisclosureIcon(),
-          Center(
-            child: DigitalGauge(value: widget.display),
-          ),
-          if (this.widget.analog) ...[
-            AnalogGauge(speed: _speed, maxSpeed: widget.maxSpeed)
-          ],
-        ]),
+    return GestureDetector(
+      child: Scaffold(
+        body: Center(
+          child: Stack(children: [
+            if (_background != null) ...[Center(child: _background)],
+            settingsDrawerDisclosureIcon(),
+            if (_topSpeed > 0 && widget.showTopSpeed) ...[
+              // The green top-speed indicator is only shown if
+              // the top speed is > 0
+              AnalogGauge(
+                  speed: _topSpeed,
+                  maxSpeed: widget.maxSpeed,
+                  color: Colors.greenAccent),
+            ],
+            Center(
+              child: DigitalGauge(value: widget.display),
+            ),
+            if (this.widget.analog) ...[
+              AnalogGauge(speed: _speed, maxSpeed: widget.maxSpeed)
+            ],
+          ]),
+        ),
       ),
+      onTap: () => setState(() {
+        _topSpeed = 0.0;
+      }),
     );
   }
 }

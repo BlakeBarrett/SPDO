@@ -3,21 +3,28 @@ import 'dart:math' as math;
 
 @immutable
 class AnalogGauge extends StatelessWidget {
-  AnalogGauge({required final this.speed, required this.maxSpeed}) : super();
+  AnalogGauge(
+      {required final this.speed,
+      required this.maxSpeed,
+      this.color = Colors.redAccent})
+      : super();
+
   final double speed;
   final int maxSpeed;
+  final Color color;
 
   @override
   Widget build(BuildContext context) {
     var angle = this.speed * (math.pi / this.maxSpeed);
-    return AngledNeedle(angle: angle);
+    return AngledNeedle(angle: angle, color: color);
   }
 }
 
 @immutable
 class AngledNeedle extends StatelessWidget {
-  AngledNeedle({required final this.angle}) : super();
+  AngledNeedle({required final this.angle, required this.color}) : super();
   final double angle;
+  final Color color;
   @override
   Widget build(BuildContext context) {
     var size = MediaQuery.of(context).size;
@@ -31,10 +38,7 @@ class AngledNeedle extends StatelessWidget {
         height: height,
         child: CustomPaint(
           painter: _LinePainter(
-              origin: tip,
-              destination: pivot,
-              thickness: 20,
-              color: Colors.redAccent),
+              origin: tip, destination: pivot, thickness: 20, color: color),
         ));
     return Transform.rotate(
         angle: angle, alignment: Alignment.bottomRight, child: line);
