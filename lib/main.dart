@@ -1,17 +1,17 @@
 import 'package:flutter/animation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:geolocator/geolocator.dart';
-import 'package:package_info/package_info.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
+import 'drawer_widget.dart';
 import 'gauges/analog.dart';
 import 'gauges/digital.dart';
 import 'image_picker_utils.dart';
+import 'settings.dart';
 import 'speedreader.dart';
 
-void main() {
+const APP_NAME = 'SPDO';
+
+Future<void> main() async {
   runApp(SPDO_App());
 }
 
@@ -20,322 +20,40 @@ class SPDO_App extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'SPDO',
+      title: APP_NAME,
       theme: ThemeData(
         primarySwatch: Colors.pink,
       ),
-      home: SpeedometerScaffold(),
+      home: SpeedListenerWidget(),
       debugShowCheckedModeBanner: false,
     );
   }
 }
 
-@immutable
-class SpeedometerScaffold extends StatefulWidget {
-  @override
-  _SpeedometerScaffoldState createState() => _SpeedometerScaffoldState();
-}
-
-class _SpeedometerScaffoldState extends State<SpeedometerScaffold> {
-  final String displayMetric = "km/h";
-  final String displayImperial = "MPH";
-  String unitsSubtitle = "MPH | km/h";
-
-  bool unitsMetric = false;
-  bool showDigital = true;
-  bool showAnalog = true;
-  bool showTopSpeed = false;
-  int maxSpeed = 90;
-
-  PackageInfo? packageInfo;
-  SharedPreferences? prefs;
-
-  final sliderColor = Color(0xFFF5F5F5);
-  final scaffoldKey = GlobalKey<ScaffoldState>();
-  final iconSize = 24.0;
-
-  @override
-  void initState() {
-    super.initState();
-    loadPreferences();
-    loadPlatformInfo();
-  }
-
-  void loadPreferences() async {
-    prefs = await SharedPreferences.getInstance();
-    unitsMetric = prefs?.getBool('unitsMetric') ?? false;
-    showDigital = prefs?.getBool('showDigital') ?? true;
-    showAnalog = prefs?.getBool('showAnalog') ?? true;
-    maxSpeed = prefs?.getInt('maxSpeed') ?? maxSpeed;
-    showTopSpeed = prefs?.getBool('showTopSpeed') ?? false;
-  }
-
-  void loadPlatformInfo() {
-    PackageInfo.fromPlatform().then((PackageInfo value) {
-      setState(() {
-        packageInfo = value;
-      });
-    });
-  }
-
-  Widget backgroundChooserWidget() {
-    return ListTile(
-      title: Row(children: [
-        Icon(Icons.add_a_photo),
-        Spacer(),
-        IconButton(
-          icon: Icon(Icons.clear),
-          onPressed: () => ImagePickerUtils.clearImage(),
-        ),
-      ]),
-      onTap: () => ImagePickerUtils.browseForImage(),
-    );
-  }
-
-  Widget unitSelectionWidget() {
-    return SwitchListTile(
-      value: unitsMetric,
-      onChanged: (newValue) => setState(() {
-        unitsMetric = newValue;
-        prefs?.setBool('unitsMetric', newValue);
-      }),
-      title: Text(unitsSubtitle, style: TextStyle(fontWeight: FontWeight.bold)),
-      tileColor: sliderColor,
-      activeColor: sliderColor,
-      activeTrackColor: Colors.grey,
-      inactiveTrackColor: Colors.grey,
-      dense: false,
-      controlAffinity: ListTileControlAffinity.trailing,
-    );
-  }
-
-  Widget digitalSpeedWidget() {
-    return SwitchListTile(
-      value: showDigital,
-      onChanged: (newValue) => setState(() {
-        showDigital = newValue;
-        prefs?.setBool('showDigital', newValue);
-      }),
-      secondary: SvgPicture.asset('assets/numeric.svg'),
-      tileColor: sliderColor,
-      activeColor: sliderColor,
-      activeTrackColor: Colors.grey,
-      inactiveTrackColor: Colors.grey,
-      dense: false,
-      controlAffinity: ListTileControlAffinity.trailing,
-    );
-  }
-
-  Widget analogSpeedWidget() {
-    return SwitchListTile(
-      value: showAnalog,
-      onChanged: (newValue) => setState(() {
-        showAnalog = newValue;
-        prefs?.setBool('showAnalog', newValue);
-      }),
-      secondary: SvgPicture.asset('assets/wiper.svg', color: Colors.red),
-      tileColor: sliderColor,
-      activeColor: sliderColor,
-      activeTrackColor: Colors.grey,
-      inactiveTrackColor: Colors.grey,
-      dense: false,
-      controlAffinity: ListTileControlAffinity.trailing,
-    );
-  }
-
-  Widget maxSpeedEditWidget(Widget actionWidget) {
-    return Padding(
-        padding: EdgeInsets.only(left: 16.0, right: 24.0),
-        child: Row(
-          children: [
-            SvgPicture.asset('assets/max-speed.svg',
-                width: iconSize, height: iconSize, color: Colors.red),
-            Spacer(),
-            Text(
-              "Max Speed",
-              style: TextStyle(fontWeight: FontWeight.bold),
-            ),
-            SizedBox(
-                width: iconSize * 2, height: iconSize * 2, child: actionWidget),
-            Text(
-              unitsMetric ? "km/h" : "MPH",
-              style: TextStyle(fontWeight: FontWeight.bold),
-            )
-          ],
-        ));
-  }
-
-  void showEditPopup(BuildContext context) {
-    var popup = SimpleDialog(
-      children: [
-        maxSpeedEditWidget(
-          TextField(
-            decoration: new InputDecoration(
-                labelText: maxSpeed.toString(),
-                contentPadding: EdgeInsets.only(left: 12.0, right: 12.0)),
-            keyboardType: TextInputType.number,
-            inputFormatters: [
-              FilteringTextInputFormatter.digitsOnly,
-            ], // Only numbers can be entered
-            onChanged: (newValue) => setState(() {
-              maxSpeed = int.parse(newValue);
-              prefs?.setInt("maxSpeed", maxSpeed.toInt());
-            }),
-          ),
-        )
-      ],
-    );
-    showDialog(context: context, builder: (context) => popup);
-  }
-
-  Widget maxSpeedWidget() {
-    if (showAnalog) {
-      return maxSpeedEditWidget(TextButton(
-        autofocus: true,
-        child: Text(maxSpeed.toString()),
-        onPressed: () => showEditPopup(context),
-      ));
-    } else {
-      return Row(children: [
-        Padding(
-          padding: EdgeInsets.all(iconSize.toDouble()),
-        )
-      ]);
-    }
-  }
-
-  Widget topSpeedWidget() {
-    return SwitchListTile(
-      value: showTopSpeed,
-      onChanged: (newValue) => setState(() {
-        showTopSpeed = newValue;
-        prefs?.setBool('showTopSpeed', newValue);
-      }),
-      secondary: SvgPicture.asset(
-        'assets/car-cruise-control.svg',
-        color: Colors.green,
-      ),
-      tileColor: sliderColor,
-      activeColor: sliderColor,
-      activeTrackColor: Colors.grey,
-      inactiveTrackColor: Colors.grey,
-      dense: false,
-      controlAffinity: ListTileControlAffinity.trailing,
-    );
-  }
-
-  Widget aboutWidget() {
-    return AboutListTile(
-      applicationIcon: SvgPicture.asset(
-        'assets/icon.svg',
-        width: iconSize * 2,
-        height: iconSize * 2,
-      ),
-      applicationName: "SPDO",
-      applicationVersion:
-          "${packageInfo?.version} build:${packageInfo?.buildNumber}",
-      aboutBoxChildren: [
-        Center(
-          child: Text("It's a speedometer."),
-        ),
-      ],
-    );
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    // Wait until we've actually finished loading everything we need.
-    if (packageInfo == null || prefs == null) {
-      return Column();
-    }
-
-    return Scaffold(
-      backgroundColor: sliderColor,
-      resizeToAvoidBottomInset: false,
-      body: SpeedListenerWidget(
-        metric: unitsMetric,
-        digital: showDigital,
-        analog: showAnalog,
-        maxSpeed: maxSpeed,
-        showTopSpeed: showTopSpeed,
-      ),
-      drawer: Drawer(
-        child: ListView(
-          keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
-          children: [
-            backgroundChooserWidget(),
-            unitSelectionWidget(),
-            digitalSpeedWidget(),
-            analogSpeedWidget(),
-            maxSpeedWidget(),
-            topSpeedWidget(),
-            aboutWidget(),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-@immutable
 class SpeedListenerWidget extends StatefulWidget {
-  SpeedListenerWidget(
-      {Key? key,
-      this.metric = false,
-      this.digital = true,
-      this.analog = true,
-      required this.maxSpeed,
-      this.showTopSpeed = false})
-      : super(key: key);
-
-  final bool metric;
-  final bool digital;
-  final bool analog;
-  final int maxSpeed;
-  final bool showTopSpeed;
   late final SpeedReader speedReader;
 
   @override
   _SpeedListenerWidgetState createState() => _SpeedListenerWidgetState();
 }
 
-class _SpeedListenerWidgetState extends State<SpeedListenerWidget> {
+class _SpeedListenerWidgetState extends State<SpeedListenerWidget>
+    with SingleTickerProviderStateMixin {
+  Settings? settings;
+
+  int get maxSpeed => settings?.maxSpeed ?? Settings.DEFAULT_MAX_SPEED;
+  bool get metric => settings?.metric ?? false;
+  bool get showTopSpeed => settings?.showTopSpeed ?? false;
+  bool get analog => settings?.analog ?? true;
+  bool get digital => settings?.digital ?? true;
+
   var _display = '';
-  var _speed = 0;
+  var _speed = 0.0;
+  var _topSpeed = 0.0;
+  Image? _background;
 
-  final displayMetric = "km/h";
-  final displayImperial = "MPH";
-
-  @override
-  void initState() {
-    super.initState();
-
-    this.widget.speedReader = SpeedReader((final Position position) {
-      setState(() {
-        var speedKPH = msToKPH(position.speed);
-        _speed =
-            (this.widget.metric ? speedKPH : kphToMPH(speedKPH)).abs().round();
-
-        final String displaySpeed = _speed.toString();
-        var suffix =
-            (widget.metric ? this.displayMetric : this.displayImperial);
-
-        if (this.widget.digital) {
-          _display = displaySpeed + suffix;
-        } else {
-          _display = '';
-        }
-
-        print(_display);
-      });
-    });
-  }
-
-  @override
-  void dispose() {
-    this.widget.speedReader.cancel();
-    super.dispose();
-  }
+  late Animation<double>? _animation;
+  late AnimationController? _animationController;
 
   double msToKPH(double metersPerSecond) {
     final double secondsPerHour = 60 * 60;
@@ -348,55 +66,25 @@ class _SpeedListenerWidgetState extends State<SpeedListenerWidget> {
   }
 
   @override
-  Widget build(BuildContext context) {
-    return SpeedometerWidget(
-      speed: _speed.toDouble(),
-      display: _display,
-      analog: widget.analog,
-      maxSpeed: widget.maxSpeed,
-      showTopSpeed: widget.showTopSpeed,
-    );
+  void dispose() {
+    settings?.writePreferences();
+    this.widget.speedReader.cancel();
+    _animationController?.dispose();
+    super.dispose();
   }
-}
 
-@immutable
-class SpeedometerWidget extends StatefulWidget {
-  SpeedometerWidget(
-      {required this.speed,
-      required this.display,
-      required this.analog,
-      required this.maxSpeed,
-      this.showTopSpeed = false})
-      : super();
-  final double speed;
-  final String display;
-  final bool analog;
-  final int maxSpeed;
-  final bool showTopSpeed;
+  Future<void> initSettings() async {
+    settings = await Settings.getInstance();
+  }
 
-  @override
-  _SpeedometerWidgetState createState() => _SpeedometerWidgetState();
-}
-
-class _SpeedometerWidgetState extends State<SpeedometerWidget>
-    with SingleTickerProviderStateMixin {
-  late Animation<double>? _animation;
-  late AnimationController? _animationController;
-
-  var _speed = 0.0;
-  var _topSpeed = 0.0;
-  Image? _background;
-
-  @override
-  void initState() {
-    super.initState();
+  void initAnimationController() {
     _animationController = new AnimationController(
         duration: const Duration(seconds: 1), vsync: this);
-    _animation = Tween<double>(begin: 0, end: widget.maxSpeed * 1.1)
+    _animation = Tween<double>(begin: 0, end: maxSpeed * 1.1)
         .animate(_animationController!)
           ..addListener(() {
             setState(() {
-              _speed = _animation!.value;
+              _speed = _animation?.value ?? 0.0;
             });
           });
     _animationController?.addStatusListener((status) {
@@ -411,26 +99,25 @@ class _SpeedometerWidgetState extends State<SpeedometerWidget>
     _animationController?.forward();
   }
 
-  @override
-  void dispose() {
-    _animationController?.dispose();
-    super.dispose();
-  }
+  void initSpeedReader() {
+    this.widget.speedReader = SpeedReader((final Position position) {
+      setState(() {
+        var speedKPH = msToKPH(position.speed);
+        _speed =
+            (metric ? speedKPH : kphToMPH(speedKPH)).abs().round().toDouble();
 
-  Widget settingsDrawerDisclosureIcon() {
-    return Positioned(
-        bottom: 0.0,
-        left: 0.0,
-        child: Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: new IconButton(
-            icon: Icon(
-              Icons.settings,
-              color: Colors.black12,
-            ),
-            onPressed: () => Scaffold.of(context).openDrawer(),
-          ),
-        ));
+        final String displaySpeed = _speed.toString();
+        var suffix = (metric ? "km/h" : "MPH");
+
+        if (digital) {
+          _display = displaySpeed + suffix;
+        } else {
+          _display = '';
+        }
+
+        print(_display);
+      });
+    });
   }
 
   @override
@@ -442,31 +129,55 @@ class _SpeedometerWidgetState extends State<SpeedometerWidget>
           _background = value;
         }));
 
-    if (_topSpeed < widget.speed) {
-      _topSpeed = widget.speed;
+    // For some reason, trying to initialize properties async in initState()
+    // causes an error to be thrown when _touching_ any instance of a nullable
+    // property. This is a stupid race condition and a gross workaround due to
+    // SharedPreferences.getInstance() being async.
+    if (settings == null) {
+      Settings.getInstance().then((value) {
+        setState(() {
+          settings = value;
+          initAnimationController();
+          initSpeedReader();
+        });
+      });
+      return _background ??
+          Center(
+            child: Text(
+              APP_NAME,
+              style: Theme.of(context).textTheme.headline1,
+            ),
+          );
     }
-    _speed = (_animation != null) ? _animation!.value : widget.speed;
+
+    // if we're not animating, use actual speed values
+    if (_animation == null) {
+      if (_topSpeed < _speed) {
+        _topSpeed = _speed;
+      }
+    } else {
+      _speed = _animation?.value ?? 0.0;
+    }
 
     return GestureDetector(
       child: Scaffold(
+        drawer: DrawerWidget(),
         body: Center(
           child: Stack(children: [
             if (_background != null) ...[Center(child: _background)],
-            settingsDrawerDisclosureIcon(),
-            if (_topSpeed > 0 && widget.showTopSpeed) ...[
+            settingsDrawerDisclosureIconButtonWidget(context),
+            if (_topSpeed > 0 && showTopSpeed) ...[
               // The green top-speed indicator is only shown if
               // the top speed is > 0
               AnalogGauge(
                   speed: _topSpeed,
-                  maxSpeed: widget.maxSpeed,
+                  maxSpeed: maxSpeed,
                   color: Colors.greenAccent),
             ],
             Center(
-              child: DigitalGauge(value: widget.display),
+              child: DigitalGauge(value: _display),
             ),
-            if (this.widget.analog) ...[
-              AnalogGauge(speed: _speed, maxSpeed: widget.maxSpeed)
-            ],
+            if (analog) ...[AnalogGauge(speed: _speed, maxSpeed: maxSpeed)],
           ]),
         ),
       ),

@@ -15,11 +15,16 @@ class ImagePickerUtils {
     if (!directory.existsSync()) {
       return null;
     }
-    var list = directory.listSync();
-    if (list.isEmpty) {
+    try {
+      var list = directory.listSync();
+      if (list.isEmpty) {
+        return null;
+      } else {
+        return File(list.first.path);
+      }
+    } catch (e) {
+      print(e);
       return null;
-    } else {
-      return File(list.first.path);
     }
   }
 
