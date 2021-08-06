@@ -216,15 +216,22 @@ class _DrawerWidgetState extends State<DrawerWidget> {
     }
 
     return Drawer(
-      child: ListView(
-        keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+      child: Column(
         children: [
-          backgroundChooserWidget(),
-          unitSelectionWidget(),
-          digitalSpeedWidget(),
-          analogSpeedWidget(),
-          maxSpeedWidget(),
-          topSpeedWidget(),
+          Expanded(
+            child: ListView(
+              keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+              children: [
+                backgroundChooserWidget(),
+                unitSelectionWidget(),
+                digitalSpeedWidget(),
+                analogSpeedWidget(),
+                maxSpeedWidget(),
+                topSpeedWidget(),
+              ],
+            ),
+          ),
+          Spacer(),
           aboutWidget(),
         ],
       ),
