@@ -1,13 +1,15 @@
 import 'dart:async';
 import 'package:shared_preferences/shared_preferences.dart';
 
+enum SettingsState { NULL, INITIALIZED }
+
 class Settings {
-  static const _DEFAULT_MAX_SPEED = 35;
+  static const DEFAULT_MAX_SPEED = 35;
   Settings({
     this.metric = false,
     this.digital = true,
     this.analog = true,
-    this.maxSpeed = _DEFAULT_MAX_SPEED,
+    this.maxSpeed = DEFAULT_MAX_SPEED,
     this.showTopSpeed = false,
   });
   bool metric;
@@ -17,34 +19,37 @@ class Settings {
   bool showTopSpeed;
 
   static Settings? _instance;
-  static Future<void> _loadPreferences() async {
+  static SharedPreferences? _preferences;
+
+  static Future<void> _initFromPreferences() async {
     if (_instance == null) {
-      SharedPreferences prefs = await SharedPreferences.getInstance();
-      _instance = Settings(
-        metric: prefs.getBool('unitsMetric') ?? false,
-        digital: prefs.getBool('showDigital') ?? true,
-        analog: prefs.getBool('showAnalog') ?? true,
-        maxSpeed: prefs.getInt('maxSpeed') ?? _DEFAULT_MAX_SPEED,
-        showTopSpeed: prefs.getBool('showTopSpeed') ?? false,
+      if (_preferences == null) {
+        _preferences = await SharedPreferences.getInstance();
+      }
+      _instance = new Settings(
+        metric: _preferences?.getBool('unitsMetric') ?? false,
+        digital: _preferences?.getBool('showDigital') ?? true,
+        analog: _preferences?.getBool('showAnalog') ?? true,
+        maxSpeed: _preferences?.getInt('maxSpeed') ?? DEFAULT_MAX_SPEED,
+        showTopSpeed: _preferences?.getBool('showTopSpeed') ?? false,
       );
     }
   }
 
   static Future<Settings> getInstance() async {
-    await Settings._loadPreferences();
-    if (_instance != null) {
-      return _instance!;
+    if (_instance == null) {
+      await Settings._initFromPreferences();
     }
-    throw new Exception('Settings not initialized');
+    return _instance!;
   }
 
-  static void writePreferences() async {
-    var instance = await getInstance();
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    prefs.setBool('unitsMetric', instance.metric);
-    prefs.setBool('showDigital', instance.digital);
-    prefs.setBool('showAnalog', instance.analog);
-    prefs.setInt('maxSpeed', instance.maxSpeed);
-    prefs.setBool('showTopSpeed', instance.showTopSpeed);
+  void writePreferences() {
+    getInstance().then((instance) {
+      _preferences?.setBool('unitsMetric', instance.metric);
+      _preferences?.setBool('showDigital', instance.digital);
+      _preferences?.setBool('showAnalog', instance.analog);
+      _preferences?.setInt('maxSpeed', instance.maxSpeed);
+      _preferences?.setBool('showTopSpeed', instance.showTopSpeed);
+    });
   }
 }
