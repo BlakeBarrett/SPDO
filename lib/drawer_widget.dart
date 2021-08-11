@@ -46,7 +46,7 @@ class _DrawerWidgetState extends State<DrawerWidget> {
   Widget backgroundChooserWidget() {
     return ListTile(
       title: Row(children: [
-        Icon(Icons.add_a_photo),
+        Icon(Icons.image),
         Spacer(),
         IconButton(
           icon: Icon(Icons.clear),
