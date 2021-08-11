@@ -18,5 +18,6 @@ A very simple speedometer app written in [Flutter](https://flutter.dev).
    * Replace `icon.png` in the `/assets` folder with what you're going for.
    * Run the flutter_launcher_icon generator: `flutter pub run flutter_launcher_icons:main`
 
-## Action Shot
+## Action Shots
 ![E7lzoBrUUAEMSgj](https://user-images.githubusercontent.com/578572/127730378-ad62ea17-7ad8-48e8-b3fe-2862e96d297e.jpeg)
+![Settings](https://user-images.githubusercontent.com/578572/129113477-21d1558a-6c24-4bd3-81b9-37f746f40de8.png)
