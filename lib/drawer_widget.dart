@@ -46,7 +46,7 @@ class _DrawerWidgetState extends State<DrawerWidget> {
   Widget backgroundChooserWidget() {
     return ListTile(
       title: Row(children: [
-        Icon(Icons.add_a_photo),
+        Icon(Icons.image),
         Spacer(),
         IconButton(
           icon: Icon(Icons.clear),
@@ -216,25 +216,22 @@ class _DrawerWidgetState extends State<DrawerWidget> {
     }
 
     return Drawer(
-      child: Column(
-        children: [
-          Expanded(
-            child: ListView(
-              keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
-              children: [
-                backgroundChooserWidget(),
-                unitSelectionWidget(),
-                digitalSpeedWidget(),
-                analogSpeedWidget(),
-                maxSpeedWidget(),
-                topSpeedWidget(),
-              ],
-            ),
+      child: Flex(direction: Axis.vertical, children: [
+        Expanded(
+          child: ListView(
+            keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+            children: [
+              backgroundChooserWidget(),
+              unitSelectionWidget(),
+              digitalSpeedWidget(),
+              analogSpeedWidget(),
+              maxSpeedWidget(),
+              topSpeedWidget(),
+            ],
           ),
-          Spacer(),
-          aboutWidget(),
-        ],
-      ),
+        ),
+        aboutWidget(),
+      ]),
     );
   }
 }

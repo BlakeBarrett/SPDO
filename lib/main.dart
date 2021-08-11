@@ -24,14 +24,48 @@ class SPDO_App extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.pink,
       ),
-      home: SpeedListenerWidget(),
+      home: SpeedoScaffold(),
       debugShowCheckedModeBanner: false,
     );
   }
 }
 
+@immutable
+class SpeedoScaffold extends StatefulWidget {
+  @override
+  _SpeedoScaffoldState createState() => _SpeedoScaffoldState();
+}
+
+class _SpeedoScaffoldState extends State<SpeedoScaffold> {
+  @override
+  Widget build(final BuildContext context) {
+    var body = SpeedListenerWidget();
+    var drawerWidget = DrawerWidget();
+    var scaffold = Scaffold(
+      drawer: drawerWidget,
+      body: body,
+    );
+    return scaffold;
+  }
+}
+
+@immutable
 class SpeedListenerWidget extends StatefulWidget {
   late final SpeedReader speedReader;
+
+  double msToKPH(final double metersPerSecond) {
+    final double secondsPerHour = 60 * 60;
+    final double metersPerHour = metersPerSecond * secondsPerHour;
+    return metersPerHour / 1000;
+  }
+
+  double kphToMPH(final double kmph) {
+    return (kmph / 1.609);
+  }
+
+  String displaySpeed(final double speed, final bool metric) {
+    return speed.round().toString() + (metric ? "km/h" : "MPH");
+  }
 
   @override
   _SpeedListenerWidgetState createState() => _SpeedListenerWidgetState();
@@ -54,16 +88,6 @@ class _SpeedListenerWidgetState extends State<SpeedListenerWidget>
 
   late Animation<double>? _animation;
   late AnimationController? _animationController;
-
-  double msToKPH(double metersPerSecond) {
-    final double secondsPerHour = 60 * 60;
-    final double metersPerHour = metersPerSecond * secondsPerHour;
-    return metersPerHour / 1000;
-  }
-
-  double kphToMPH(double kmph) {
-    return (kmph / 1.609);
-  }
 
   @override
   void dispose() {
@@ -102,15 +126,21 @@ class _SpeedListenerWidgetState extends State<SpeedListenerWidget>
   void initSpeedReader() {
     this.widget.speedReader = SpeedReader((final Position position) {
       setState(() {
-        var speedKPH = msToKPH(position.speed);
-        _speed =
-            (metric ? speedKPH : kphToMPH(speedKPH)).abs().round().toDouble();
+        if (position.speedAccuracy < 0) {
+          return;
+        }
 
-        final String displaySpeed = _speed.toString();
-        var suffix = (metric ? "km/h" : "MPH");
+        var speedKPH = widget.msToKPH(position.speed);
+
+        _speed =
+            (metric ? speedKPH : widget.kphToMPH(speedKPH)).abs().toDouble();
+
+        if (_topSpeed < _speed) {
+          _topSpeed = _speed;
+        }
 
         if (digital) {
-          _display = displaySpeed + suffix;
+          _display = widget.displaySpeed(_speed, metric);
         } else {
           _display = '';
         }
@@ -151,39 +181,31 @@ class _SpeedListenerWidgetState extends State<SpeedListenerWidget>
     }
 
     // if we're not animating, use actual speed values
-    if (_animation == null) {
-      if (_topSpeed < _speed) {
-        _topSpeed = _speed;
-      }
-    } else {
+    if (_animation != null) {
       _speed = _animation?.value ?? 0.0;
     }
 
-    return GestureDetector(
-      child: Scaffold(
-        drawer: DrawerWidget(),
-        body: Center(
-          child: Stack(children: [
-            if (_background != null) ...[Center(child: _background)],
-            settingsDrawerDisclosureIconButtonWidget(context),
-            if (_topSpeed > 0 && showTopSpeed) ...[
-              // The green top-speed indicator is only shown if
-              // the top speed is > 0
-              AnalogGauge(
-                  speed: _topSpeed,
-                  maxSpeed: maxSpeed,
-                  color: Colors.greenAccent),
-            ],
-            Center(
-              child: DigitalGauge(value: _display),
-            ),
-            if (analog) ...[AnalogGauge(speed: _speed, maxSpeed: maxSpeed)],
-          ]),
+    var body = Center(
+      child: Stack(children: [
+        if (_background != null) ...[Center(child: _background)],
+        settingsDrawerDisclosureIconButtonWidget(context),
+        if (_topSpeed > 0 && showTopSpeed) ...[
+          // The green top-speed indicator is only shown if
+          // the top speed is > 0
+          AnalogGauge(
+              speed: _topSpeed, maxSpeed: maxSpeed, color: Colors.greenAccent),
+        ],
+        Center(
+          child: DigitalGauge(value: _display),
         ),
-      ),
-      onTap: () => setState(() {
-        _topSpeed = 0.0;
-      }),
+        if (analog) ...[AnalogGauge(speed: _speed, maxSpeed: maxSpeed)],
+      ]),
     );
+
+    return GestureDetector(
+        child: body,
+        onTap: () => setState(() {
+              _topSpeed = 0.0;
+            }));
   }
 }
