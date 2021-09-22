@@ -106,18 +106,23 @@ class _SpeedListenerWidgetState extends State<SpeedListenerWidget>
         duration: const Duration(seconds: 1), vsync: this);
     _animation = Tween<double>(begin: 0, end: maxSpeed * 1.1)
         .animate(_animationController!)
-          ..addListener(() {
-            setState(() {
-              _speed = _animation?.value ?? 0.0;
-            });
-          });
-    _animationController?.addStatusListener((status) {
-      if (status == AnimationStatus.completed) {
-        _animationController?.reverse();
-      } else if (status == AnimationStatus.dismissed) {
-        _animationController?.dispose();
-        _animationController = null;
-        _animation = null;
+      ..addListener(() {
+        setState(() {
+          _speed = _animation?.value ?? 0.0;
+        });
+      });
+    _animationController?.addStatusListener((final status) {
+      switch (status) {
+        case AnimationStatus.completed:
+          _animationController?.reverse();
+          break;
+        case AnimationStatus.dismissed:
+          _animationController?.dispose();
+          _animationController = null;
+          _animation = null;
+          break;
+        default:
+          break;
       }
     });
     _animationController?.forward();
@@ -130,7 +135,7 @@ class _SpeedListenerWidgetState extends State<SpeedListenerWidget>
           return;
         }
 
-        var speedKPH = widget.msToKPH(position.speed);
+        final speedKPH = widget.msToKPH(position.speed);
 
         _speed =
             (metric ? speedKPH : widget.kphToMPH(speedKPH)).abs().toDouble();
@@ -151,7 +156,7 @@ class _SpeedListenerWidgetState extends State<SpeedListenerWidget>
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(final BuildContext context) {
     // Loading the background has to happen here, instead of in initState,
     // because the context (which is used to query the screen size) is not
     // available until build() is called.
