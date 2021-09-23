@@ -12,13 +12,13 @@ void main() {
       (final WidgetTester tester) async {
     await tester.pumpWidget(Builder(
       builder: (final BuildContext context) {
-        return wrapWithMaterialApp(GaugeWidget(
+        return wrapWithMaterialApp(GaugeWidget(GaugeSettings(
             display: "69MPH",
             speed: 69,
             showAnalog: true,
             showTopSpeed: true,
             topSpeed: 75,
-            maxSpeed: 85));
+            maxSpeed: 85)));
       },
     ));
   });

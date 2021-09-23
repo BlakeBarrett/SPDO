@@ -11,6 +11,26 @@ import 'speedreader.dart';
 
 const APP_NAME = 'SPDO';
 
+class GaugeSettings {
+  final String display;
+  final double speed;
+  final double topSpeed;
+  final int maxSpeed;
+  final bool showTopSpeed;
+  final bool showAnalog;
+  final Widget? background;
+
+  GaugeSettings({
+    required final this.display,
+    required final this.speed,
+    required final this.topSpeed,
+    required final this.maxSpeed,
+    required final this.showTopSpeed,
+    required final this.showAnalog,
+    final this.background,
+  });
+}
+
 Future<void> main() async {
   runApp(SPDO_App());
 }
@@ -185,13 +205,15 @@ class _SpeedListenerWidgetState extends State<SpeedListenerWidget>
 
     return GestureDetector(
         child: GaugeWidget(
-            display: _display,
-            speed: _speed,
-            showAnalog: analog,
-            showTopSpeed: showTopSpeed,
-            topSpeed: _topSpeed,
-            maxSpeed: maxSpeed,
-            background: _background),
+          GaugeSettings(
+              display: _display,
+              speed: _speed,
+              showAnalog: analog,
+              showTopSpeed: showTopSpeed,
+              topSpeed: _topSpeed,
+              maxSpeed: maxSpeed,
+              background: _background),
+        ),
         onTap: () => setState(() {
               _topSpeed = 0.0;
             }));
@@ -207,15 +229,15 @@ class GaugeWidget extends StatelessWidget {
   final bool showAnalog;
   final Widget? background;
 
-  GaugeWidget({
-    required final this.display,
-    required final this.speed,
-    required final this.showAnalog,
-    required final this.showTopSpeed,
-    required final this.topSpeed,
-    required final this.maxSpeed,
-    final this.background,
-  }) : super();
+  GaugeWidget(final GaugeSettings settings)
+      : display = settings.display,
+        speed = settings.speed,
+        topSpeed = settings.topSpeed,
+        maxSpeed = settings.maxSpeed,
+        showTopSpeed = settings.showTopSpeed,
+        showAnalog = settings.showAnalog,
+        background = settings.background,
+        super();
 
   @override
   Widget build(final BuildContext context) {
