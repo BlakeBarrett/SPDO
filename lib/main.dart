@@ -70,7 +70,8 @@ class SpeedListenerWidget extends StatefulWidget {
 
 class _SpeedListenerWidgetState extends State<SpeedListenerWidget>
     with SingleTickerProviderStateMixin {
-  late Settings? settings;
+  Settings? settings;
+
   int get maxSpeed => settings?.maxSpeed ?? Settings.DEFAULT_MAX_SPEED;
   bool get metric => settings?.metric ?? false;
   bool get showTopSpeed => settings?.showTopSpeed ?? false;
