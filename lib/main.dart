@@ -70,8 +70,7 @@ class SpeedListenerWidget extends StatefulWidget {
 
 class _SpeedListenerWidgetState extends State<SpeedListenerWidget>
     with SingleTickerProviderStateMixin {
-  late final Settings? settings;
-
+  late Settings? settings;
   int get maxSpeed => settings?.maxSpeed ?? Settings.DEFAULT_MAX_SPEED;
   bool get metric => settings?.metric ?? false;
   bool get showTopSpeed => settings?.showTopSpeed ?? false;
@@ -92,10 +91,6 @@ class _SpeedListenerWidgetState extends State<SpeedListenerWidget>
     this.widget.speedReader.cancel();
     _animationController?.dispose();
     super.dispose();
-  }
-
-  Future<void> initSettings() async {
-    settings = await Settings.getInstance();
   }
 
   void initAnimationController() {
@@ -224,7 +219,7 @@ class GaugeWidget extends StatelessWidget {
   @override
   Widget build(final BuildContext context) {
     return Center(
-      child: Stack(children: [
+      child: Stack(alignment: Alignment.topLeft, children: [
         if (background != null) ...[Center(child: background)],
         settingsDrawerDisclosureIconButtonWidget(context),
         if (topSpeed > 0 && showTopSpeed) ...[
