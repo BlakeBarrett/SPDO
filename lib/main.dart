@@ -18,7 +18,7 @@ Future<void> main() async {
 // ignore: camel_case_types
 class SPDO_App extends StatelessWidget {
   @override
-  Widget build(BuildContext context) {
+  Widget build(final BuildContext context) {
     return MaterialApp(
       title: APP_NAME,
       theme: ThemeData(
@@ -39,13 +39,10 @@ class SpeedoScaffold extends StatefulWidget {
 class _SpeedoScaffoldState extends State<SpeedoScaffold> {
   @override
   Widget build(final BuildContext context) {
-    var body = SpeedListenerWidget();
-    var drawerWidget = DrawerWidget();
-    var scaffold = Scaffold(
-      drawer: drawerWidget,
-      body: body,
+    return Scaffold(
+      drawer: DrawerWidget(),
+      body: SpeedListenerWidget(),
     );
-    return scaffold;
   }
 }
 
@@ -54,7 +51,7 @@ class SpeedListenerWidget extends StatefulWidget {
   late final SpeedReader speedReader;
 
   double msToKPH(final double metersPerSecond) {
-    final double secondsPerHour = 60 * 60;
+    const secondsPerHour = 60 * 60;
     final double metersPerHour = metersPerSecond * secondsPerHour;
     return metersPerHour / 1000;
   }
@@ -73,7 +70,7 @@ class SpeedListenerWidget extends StatefulWidget {
 
 class _SpeedListenerWidgetState extends State<SpeedListenerWidget>
     with SingleTickerProviderStateMixin {
-  Settings? settings;
+  late final Settings? settings;
 
   int get maxSpeed => settings?.maxSpeed ?? Settings.DEFAULT_MAX_SPEED;
   bool get metric => settings?.metric ?? false;
@@ -160,7 +157,7 @@ class _SpeedListenerWidgetState extends State<SpeedListenerWidget>
     // Loading the background has to happen here, instead of in initState,
     // because the context (which is used to query the screen size) is not
     // available until build() is called.
-    ImagePickerUtils.getImage(context).then((value) => setState(() {
+    ImagePickerUtils.getImage(context).then((final value) => setState(() {
           _background = value;
         }));
 
@@ -169,7 +166,7 @@ class _SpeedListenerWidgetState extends State<SpeedListenerWidget>
     // property. This is a stupid race condition and a gross workaround due to
     // SharedPreferences.getInstance() being async.
     if (settings == null) {
-      Settings.getInstance().then((value) {
+      Settings.getInstance().then((final value) {
         setState(() {
           settings = value;
           initAnimationController();
@@ -190,27 +187,57 @@ class _SpeedListenerWidgetState extends State<SpeedListenerWidget>
       _speed = _animation?.value ?? 0.0;
     }
 
-    var body = Center(
-      child: Stack(children: [
-        if (_background != null) ...[Center(child: _background)],
-        settingsDrawerDisclosureIconButtonWidget(context),
-        if (_topSpeed > 0 && showTopSpeed) ...[
-          // The green top-speed indicator is only shown if
-          // the top speed is > 0
-          AnalogGauge(
-              speed: _topSpeed, maxSpeed: maxSpeed, color: Colors.greenAccent),
-        ],
-        Center(
-          child: DigitalGauge(value: _display),
-        ),
-        if (analog) ...[AnalogGauge(speed: _speed, maxSpeed: maxSpeed)],
-      ]),
-    );
-
     return GestureDetector(
-        child: body,
+        child: GaugeWidget(
+            display: _display,
+            speed: _speed,
+            showAnalog: analog,
+            showTopSpeed: showTopSpeed,
+            topSpeed: _topSpeed,
+            maxSpeed: maxSpeed,
+            background: _background),
         onTap: () => setState(() {
               _topSpeed = 0.0;
             }));
+  }
+}
+
+class GaugeWidget extends StatelessWidget {
+  final String display;
+  final double speed;
+  final double topSpeed;
+  final int maxSpeed;
+  final bool showTopSpeed;
+  final bool showAnalog;
+  final Widget? background;
+
+  GaugeWidget({
+    required final this.display,
+    required final this.speed,
+    required final this.showAnalog,
+    required final this.showTopSpeed,
+    required final this.topSpeed,
+    required final this.maxSpeed,
+    final this.background,
+  }) : super();
+
+  @override
+  Widget build(final BuildContext context) {
+    return Center(
+      child: Stack(children: [
+        if (background != null) ...[Center(child: background)],
+        settingsDrawerDisclosureIconButtonWidget(context),
+        if (topSpeed > 0 && showTopSpeed) ...[
+          // The green top-speed indicator is only shown if
+          // the top speed is > 0
+          AnalogGauge(
+              speed: topSpeed, maxSpeed: maxSpeed, color: Colors.greenAccent),
+        ],
+        Center(
+          child: DigitalGauge(value: display),
+        ),
+        if (showAnalog) ...[AnalogGauge(speed: speed, maxSpeed: maxSpeed)],
+      ]),
+    );
   }
 }
