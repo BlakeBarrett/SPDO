@@ -51,12 +51,7 @@ class SPDO_App extends StatelessWidget {
 }
 
 @immutable
-class SpeedoScaffold extends StatefulWidget {
-  @override
-  _SpeedoScaffoldState createState() => _SpeedoScaffoldState();
-}
-
-class _SpeedoScaffoldState extends State<SpeedoScaffold> {
+class SpeedoScaffold extends StatelessWidget {
   @override
   Widget build(final BuildContext context) {
     return Scaffold(
@@ -144,14 +139,13 @@ class _SpeedListenerWidgetState extends State<SpeedListenerWidget>
   void initSpeedReader() {
     this.widget.speedReader = SpeedReader((final Position position) {
       setState(() {
-        if (position.speedAccuracy < 0) {
+        if (position.speedAccuracy < 0 || position.speed.isNaN) {
           return;
         }
 
         final speedKPH = widget.msToKPH(position.speed);
 
-        _speed =
-            (metric ? speedKPH : widget.kphToMPH(speedKPH)).abs().toDouble();
+        _speed = (metric ? speedKPH : widget.kphToMPH(speedKPH));
 
         if (_topSpeed < _speed) {
           _topSpeed = _speed;
