@@ -2,7 +2,8 @@
     package="com.blakebarrett.spdo">
    <application
         android:label="spdo"
-        android:icon="@mipmap/launcher_icon">
+        android:icon="@mipmap/launcher_icon"
+        android:extractNativeLibs="false">
         <activity
             android:name=".MainActivity"
             android:launchMode="singleTop"
