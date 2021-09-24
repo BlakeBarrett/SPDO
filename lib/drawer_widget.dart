@@ -1,3 +1,5 @@
+import 'dart:io' show Platform;
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -107,9 +109,11 @@ class _DrawerWidgetState extends State<DrawerWidget> {
 
   Widget maxSpeedEditWidget(Widget actionWidget) {
     return Padding(
-        padding: EdgeInsets.only(left: 16.0, right: 24.0),
+        padding:
+            EdgeInsets.only(left: Platform.isAndroid ? 16.0 : 0.0, right: 24.0),
         child: Row(
           children: [
+            if (!Platform.isAndroid) ...[Spacer()],
             SvgPicture.asset('assets/max-speed.svg',
                 width: iconSize, height: iconSize, color: Colors.red),
             Spacer(),
@@ -140,7 +144,11 @@ class _DrawerWidgetState extends State<DrawerWidget> {
               FilteringTextInputFormatter.digitsOnly,
             ], // Only numbers can be entered
             onChanged: (newValue) => setState(() {
-              settings.maxSpeed = int.parse(newValue);
+              try {
+                settings.maxSpeed = int.parse(newValue);
+              } catch (e) {
+                print(e);
+              }
             }),
           ),
         )

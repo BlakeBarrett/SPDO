@@ -11,6 +11,26 @@ import 'speedreader.dart';
 
 const APP_NAME = 'SPDO';
 
+class GaugeSettings {
+  final String display;
+  final double speed;
+  final double topSpeed;
+  final int maxSpeed;
+  final bool showTopSpeed;
+  final bool showAnalog;
+  final Widget? background;
+
+  GaugeSettings({
+    required final this.display,
+    required final this.speed,
+    required final this.topSpeed,
+    required final this.maxSpeed,
+    required final this.showTopSpeed,
+    required final this.showAnalog,
+    final this.background,
+  });
+}
+
 Future<void> main() async {
   runApp(SPDO_App());
 }
@@ -31,12 +51,7 @@ class SPDO_App extends StatelessWidget {
 }
 
 @immutable
-class SpeedoScaffold extends StatefulWidget {
-  @override
-  _SpeedoScaffoldState createState() => _SpeedoScaffoldState();
-}
-
-class _SpeedoScaffoldState extends State<SpeedoScaffold> {
+class SpeedoScaffold extends StatelessWidget {
   @override
   Widget build(final BuildContext context) {
     return Scaffold(
@@ -70,7 +85,7 @@ class SpeedListenerWidget extends StatefulWidget {
 
 class _SpeedListenerWidgetState extends State<SpeedListenerWidget>
     with SingleTickerProviderStateMixin {
-  late final Settings? settings;
+  Settings? settings;
 
   int get maxSpeed => settings?.maxSpeed ?? Settings.DEFAULT_MAX_SPEED;
   bool get metric => settings?.metric ?? false;
@@ -92,10 +107,6 @@ class _SpeedListenerWidgetState extends State<SpeedListenerWidget>
     this.widget.speedReader.cancel();
     _animationController?.dispose();
     super.dispose();
-  }
-
-  Future<void> initSettings() async {
-    settings = await Settings.getInstance();
   }
 
   void initAnimationController() {
@@ -128,14 +139,13 @@ class _SpeedListenerWidgetState extends State<SpeedListenerWidget>
   void initSpeedReader() {
     this.widget.speedReader = SpeedReader((final Position position) {
       setState(() {
-        if (position.speedAccuracy < 0) {
+        if (position.speedAccuracy < 0 || position.speed.isNaN) {
           return;
         }
 
         final speedKPH = widget.msToKPH(position.speed);
 
-        _speed =
-            (metric ? speedKPH : widget.kphToMPH(speedKPH)).abs().toDouble();
+        _speed = (metric ? speedKPH : widget.kphToMPH(speedKPH));
 
         if (_topSpeed < _speed) {
           _topSpeed = _speed;
@@ -189,13 +199,15 @@ class _SpeedListenerWidgetState extends State<SpeedListenerWidget>
 
     return GestureDetector(
         child: GaugeWidget(
-            display: _display,
-            speed: _speed,
-            showAnalog: analog,
-            showTopSpeed: showTopSpeed,
-            topSpeed: _topSpeed,
-            maxSpeed: maxSpeed,
-            background: _background),
+          GaugeSettings(
+              display: _display,
+              speed: _speed,
+              showAnalog: analog,
+              showTopSpeed: showTopSpeed,
+              topSpeed: _topSpeed,
+              maxSpeed: maxSpeed,
+              background: _background),
+        ),
         onTap: () => setState(() {
               _topSpeed = 0.0;
             }));
@@ -211,20 +223,20 @@ class GaugeWidget extends StatelessWidget {
   final bool showAnalog;
   final Widget? background;
 
-  GaugeWidget({
-    required final this.display,
-    required final this.speed,
-    required final this.showAnalog,
-    required final this.showTopSpeed,
-    required final this.topSpeed,
-    required final this.maxSpeed,
-    final this.background,
-  }) : super();
+  GaugeWidget(final GaugeSettings settings)
+      : display = settings.display,
+        speed = settings.speed,
+        topSpeed = settings.topSpeed,
+        maxSpeed = settings.maxSpeed,
+        showTopSpeed = settings.showTopSpeed,
+        showAnalog = settings.showAnalog,
+        background = settings.background,
+        super();
 
   @override
   Widget build(final BuildContext context) {
     return Center(
-      child: Stack(children: [
+      child: Stack(alignment: Alignment.topLeft, children: [
         if (background != null) ...[Center(child: background)],
         settingsDrawerDisclosureIconButtonWidget(context),
         if (topSpeed > 0 && showTopSpeed) ...[

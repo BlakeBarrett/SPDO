@@ -4,7 +4,7 @@ import 'package:spdo/main.dart';
 
 void main() {
   testWidgets('Tests metric to imperial conversion math',
-      (WidgetTester tester) async {
+      (final WidgetTester tester) async {
     var speedListener = SpeedListenerWidget();
 
     var metersPerSecond = 7.20;
