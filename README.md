@@ -24,3 +24,4 @@ A very simple speedometer app written in [Flutter](https://flutter.dev).
 
 ## Production Links
  * [SPDO](https://play.google.com/store/apps/details?id=com.blakebarrett.spdo) on Google Play
+ * [SPDO](https://apps.apple.com/app/id1587277823) on App Store
