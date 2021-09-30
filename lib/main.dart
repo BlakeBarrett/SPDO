@@ -101,6 +101,63 @@ class _SpeedListenerWidgetState extends State<SpeedListenerWidget>
   late Animation<double>? _animation;
   late AnimationController? _animationController;
 
+  late List<GaugeSettings> stages = [
+    GaugeSettings(
+      display: '7MPH',
+      speed: 7.0,
+      topSpeed: 9.0,
+      maxSpeed: 10,
+      showTopSpeed: true,
+      showAnalog: true,
+    ),
+    GaugeSettings(
+      display: '23MPH',
+      speed: 23.0,
+      topSpeed: 37.0,
+      maxSpeed: 35,
+      showTopSpeed: false,
+      showAnalog: true,
+    ),
+    GaugeSettings(
+      display: '69MPH',
+      speed: 69.0,
+      topSpeed: 70.0,
+      maxSpeed: 75,
+      showTopSpeed: false,
+      showAnalog: false,
+    ),
+    GaugeSettings(
+      display: '45km/h',
+      speed: 45.0,
+      topSpeed: 25.0,
+      maxSpeed: 30,
+      showTopSpeed: false,
+      showAnalog: false,
+    ),
+    GaugeSettings(
+      display: '13km/h',
+      speed: 13.0,
+      topSpeed: 25.0,
+      maxSpeed: 30,
+      showTopSpeed: true,
+      showAnalog: true,
+    ),
+    GaugeSettings(
+      display: '230km/h',
+      speed: 230.0,
+      topSpeed: 230.0,
+      maxSpeed: 230,
+      showTopSpeed: true,
+      showAnalog: true,
+    ),
+  ];
+  var currentStage = 0;
+
+  @override
+  void initState() {
+    super.initState();
+  }
+
   @override
   void dispose() {
     settings?.writePreferences();
@@ -197,19 +254,22 @@ class _SpeedListenerWidgetState extends State<SpeedListenerWidget>
       _speed = _animation?.value ?? 0.0;
     }
 
+    var gaugeSettings = stages[currentStage.clamp(0, stages.length - 1)];
+
     return GestureDetector(
-        child: GaugeWidget(
-          GaugeSettings(
-              display: _display,
-              speed: _speed,
-              showAnalog: analog,
-              showTopSpeed: showTopSpeed,
-              topSpeed: _topSpeed,
-              maxSpeed: maxSpeed,
-              background: _background),
-        ),
+        child: GaugeWidget(gaugeSettings
+            // GaugeSettings(
+            //     display: _display,
+            //     speed: _speed,
+            //     showAnalog: analog,
+            //     showTopSpeed: showTopSpeed,
+            //     topSpeed: _topSpeed,
+            //     maxSpeed: maxSpeed,
+            //     background: _background),
+            ),
         onTap: () => setState(() {
-              _topSpeed = 0.0;
+              // _topSpeed = 0.0;
+              currentStage = (currentStage + 1) % stages.length;
             }));
   }
 }
