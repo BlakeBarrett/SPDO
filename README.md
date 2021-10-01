@@ -2,6 +2,10 @@
 
 A very simple speedometer app written in [Flutter](https://flutter.dev).
 
+## Production Links
+ * [Google Play](https://play.google.com/store/apps/details?id=com.blakebarrett.spdo).
+ * [App Store](https://apps.apple.com/app/id1587277823).
+
 ## Getting Started
 
  * Install Flutter: `brew install flutter`
@@ -21,7 +25,3 @@ A very simple speedometer app written in [Flutter](https://flutter.dev).
 ## Action Shots
 ![E7lzoBrUUAEMSgj](https://user-images.githubusercontent.com/578572/127730378-ad62ea17-7ad8-48e8-b3fe-2862e96d297e.jpeg)
 ![Settings](https://user-images.githubusercontent.com/578572/129113477-21d1558a-6c24-4bd3-81b9-37f746f40de8.png)
-
-## Production Links
- * [SPDO](https://play.google.com/store/apps/details?id=com.blakebarrett.spdo) on Google Play
- * [SPDO](https://apps.apple.com/app/id1587277823) on App Store
