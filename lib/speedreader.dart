@@ -1,15 +1,16 @@
+import 'package:flutter/foundation.dart';
 import 'package:geolocator/geolocator.dart';
 import 'dart:async';
 
 class SpeedReader {
   late LocationPermission _permission;
-  late var _listener;
+  late StreamSubscription<Position> _listener;
 
-  SpeedReader(void updateListener(Position value)) {
+  SpeedReader(void Function(Position value) updateListener) {
     _determinePosition().then((value) {
       _listener = Geolocator.getPositionStream(
         desiredAccuracy: LocationAccuracy.bestForNavigation,
-        intervalDuration: Duration(microseconds: 0),
+        intervalDuration: const Duration(microseconds: 0),
       ).listen(updateListener);
     });
   }
@@ -33,7 +34,9 @@ class SpeedReader {
       // accessing the position and request users of the
       // App to enable the location services.
       var error = 'Location services are disabled.';
-      print(error);
+      if (kDebugMode) {
+        print(error);
+      }
       return Future.error(error);
     }
 
@@ -47,7 +50,9 @@ class SpeedReader {
         // returned true. According to Android guidelines
         // your App should show an explanatory UI now.
         var error = 'Location permissions are denied';
-        print(error);
+        if (kDebugMode) {
+          print(error);
+        }
         return Future.error(error);
       }
     }
@@ -56,7 +61,9 @@ class SpeedReader {
       // Permissions are denied forever, handle appropriately.
       var error =
           'Location permissions are permanently denied, we cannot request permissions.';
-      print(error);
+      if (kDebugMode) {
+        print(error);
+      }
       return Future.error(error);
     }
 

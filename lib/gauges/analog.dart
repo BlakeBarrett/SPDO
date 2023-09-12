@@ -3,11 +3,10 @@ import 'dart:math' as math;
 
 @immutable
 class AnalogGauge extends StatelessWidget {
-  AnalogGauge(
-      {required final this.speed,
+  const AnalogGauge(
+      {super.key, required this.speed,
       required this.maxSpeed,
-      this.color = Colors.redAccent})
-      : super();
+      this.color = Colors.redAccent});
 
   final double speed;
   final int maxSpeed;
@@ -15,14 +14,14 @@ class AnalogGauge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    var angle = this.speed * (math.pi / this.maxSpeed);
+    var angle = speed * (math.pi / maxSpeed);
     return AngledNeedle(angle: angle, color: color);
   }
 }
 
 @immutable
 class AngledNeedle extends StatelessWidget {
-  AngledNeedle({required final this.angle, required this.color}) : super();
+  const AngledNeedle({super.key, required this.angle, required this.color});
   final double angle;
   final Color color;
   @override
@@ -33,7 +32,7 @@ class AngledNeedle extends StatelessWidget {
     var tip = Offset(0, height);
     var pivot = Offset(width, height);
 
-    Widget line = Container(
+    Widget line = SizedBox(
         width: width,
         height: height,
         child: CustomPaint(
@@ -47,10 +46,10 @@ class AngledNeedle extends StatelessWidget {
 
 class _LinePainter extends CustomPainter {
   _LinePainter(
-      {required final this.origin,
-      required final this.destination,
-      required final this.thickness,
-      required final this.color})
+      {required this.origin,
+      required this.destination,
+      required this.thickness,
+      required this.color})
       : super();
 
   Offset origin, destination;
@@ -60,20 +59,20 @@ class _LinePainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     var paint = Paint()
-      ..color = this.color
+      ..color = color
       ..style = PaintingStyle.fill;
 
     var path = Path();
 
-    path.moveTo(this.origin.dx, this.origin.dy);
-    path.lineTo(this.destination.dx, this.origin.dy - (thickness / 2));
-    path.lineTo(this.destination.dx, this.origin.dy + (thickness / 2));
-    path.lineTo(this.origin.dx, this.origin.dy);
+    path.moveTo(origin.dx, origin.dy);
+    path.lineTo(destination.dx, origin.dy - (thickness / 2));
+    path.lineTo(destination.dx, origin.dy + (thickness / 2));
+    path.lineTo(origin.dx, origin.dy);
     path.close();
 
     canvas.drawPath(path, paint);
 
-    canvas.drawCircle(this.destination, (this.thickness.toDouble()), paint);
+    canvas.drawCircle(destination, (thickness.toDouble()), paint);
   }
 
   @override

@@ -10,6 +10,8 @@ import 'settings.dart';
 
 @immutable
 class DrawerWidget extends StatefulWidget {
+  const DrawerWidget({super.key});
+
   @override
   _DrawerWidgetState createState() => _DrawerWidgetState();
 }
@@ -22,7 +24,7 @@ class _DrawerWidgetState extends State<DrawerWidget> {
   PackageInfo? packageInfo;
   late Settings settings;
 
-  final sliderColor = Color(0xFFF5F5F5);
+  final sliderColor = const Color(0xFFF5F5F5);
   final scaffoldKey = GlobalKey<ScaffoldState>();
   final iconSize = 24.0;
 
@@ -48,10 +50,10 @@ class _DrawerWidgetState extends State<DrawerWidget> {
   Widget backgroundChooserWidget() {
     return ListTile(
       title: Row(children: [
-        Icon(Icons.image),
-        Spacer(),
+        const Icon(Icons.image),
+        const Spacer(),
         IconButton(
-          icon: Icon(Icons.clear),
+          icon: const Icon(Icons.clear),
           onPressed: () => ImagePickerUtils.clearImage(),
         ),
       ]),
@@ -65,7 +67,7 @@ class _DrawerWidgetState extends State<DrawerWidget> {
       onChanged: (newValue) => setState(() {
         settings.metric = newValue;
       }),
-      title: Text(unitsSubtitle, style: TextStyle(fontWeight: FontWeight.bold)),
+      title: Text(unitsSubtitle, style: const TextStyle(fontWeight: FontWeight.bold)),
       tileColor: sliderColor,
       activeColor: sliderColor,
       activeTrackColor: Colors.grey,
@@ -113,11 +115,11 @@ class _DrawerWidgetState extends State<DrawerWidget> {
             EdgeInsets.only(left: Platform.isAndroid ? 16.0 : 0.0, right: 24.0),
         child: Row(
           children: [
-            if (!Platform.isAndroid) ...[Spacer()],
+            if (!Platform.isAndroid) ...[const Spacer()],
             SvgPicture.asset('assets/max-speed.svg',
                 width: iconSize, height: iconSize, color: Colors.red),
-            Spacer(),
-            Text(
+            const Spacer(),
+            const Text(
               "Max Speed",
               style: TextStyle(fontWeight: FontWeight.bold),
             ),
@@ -125,7 +127,7 @@ class _DrawerWidgetState extends State<DrawerWidget> {
                 width: iconSize * 2, height: iconSize * 2, child: actionWidget),
             Text(
               settings.metric ? "km/h" : "MPH",
-              style: TextStyle(fontWeight: FontWeight.bold),
+              style: const TextStyle(fontWeight: FontWeight.bold),
             )
           ],
         ));
@@ -136,9 +138,9 @@ class _DrawerWidgetState extends State<DrawerWidget> {
       children: [
         maxSpeedEditWidget(
           TextField(
-            decoration: new InputDecoration(
+            decoration: InputDecoration(
                 labelText: settings.maxSpeed.toString(),
-                contentPadding: EdgeInsets.only(left: 12.0, right: 12.0)),
+                contentPadding: const EdgeInsets.only(left: 12.0, right: 12.0)),
             keyboardType: TextInputType.number,
             inputFormatters: [
               FilteringTextInputFormatter.digitsOnly,
@@ -202,7 +204,7 @@ class _DrawerWidgetState extends State<DrawerWidget> {
       applicationName: 'SPDO',
       applicationVersion:
           "${packageInfo?.version} build:${packageInfo?.buildNumber}",
-      aboutBoxChildren: [
+      aboutBoxChildren: const [
         Center(
           child: Text("It's a speedometer."),
         ),
@@ -220,7 +222,7 @@ class _DrawerWidgetState extends State<DrawerWidget> {
   Widget build(BuildContext context) {
     // Wait until we've actually finished loading everything we need.
     if (packageInfo == null) {
-      return Column();
+      return const Column();
     }
 
     return Drawer(
@@ -250,8 +252,8 @@ Widget settingsDrawerDisclosureIconButtonWidget(BuildContext context) {
       left: 0.0,
       child: Padding(
         padding: const EdgeInsets.all(8.0),
-        child: new IconButton(
-          icon: Icon(
+        child: IconButton(
+          icon: const Icon(
             Icons.settings,
             color: Colors.black12,
           ),

@@ -12,8 +12,8 @@ class DigitalGauge extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Text(
-      '$_value',
-      style: Theme.of(context).textTheme.headline1,
+      _value,
+      style: Theme.of(context).textTheme.displayLarge,
     );
   }
 }

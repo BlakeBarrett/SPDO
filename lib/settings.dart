@@ -23,10 +23,8 @@ class Settings {
 
   static Future<void> _initFromPreferences() async {
     if (_instance == null) {
-      if (_preferences == null) {
-        _preferences = await SharedPreferences.getInstance();
-      }
-      _instance = new Settings(
+      _preferences ??= await SharedPreferences.getInstance();
+      _instance = Settings(
         metric: _preferences?.getBool('unitsMetric') ?? false,
         digital: _preferences?.getBool('showDigital') ?? true,
         analog: _preferences?.getBool('showAnalog') ?? true,

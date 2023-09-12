@@ -1,4 +1,4 @@
-import 'package:flutter/animation.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 
@@ -21,22 +21,24 @@ class GaugeSettings {
   final Widget? background;
 
   GaugeSettings({
-    required final this.display,
-    required final this.speed,
-    required final this.topSpeed,
-    required final this.maxSpeed,
-    required final this.showTopSpeed,
-    required final this.showAnalog,
-    final this.background,
+    required this.display,
+    required this.speed,
+    required this.topSpeed,
+    required this.maxSpeed,
+    required this.showTopSpeed,
+    required this.showAnalog,
+    this.background,
   });
 }
 
 Future<void> main() async {
-  runApp(SPDO_App());
+  runApp(const SPDO_App());
 }
 
 // ignore: camel_case_types
 class SPDO_App extends StatelessWidget {
+  const SPDO_App({super.key});
+
   @override
   Widget build(final BuildContext context) {
     return MaterialApp(
@@ -44,7 +46,7 @@ class SPDO_App extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.pink,
       ),
-      home: SpeedoScaffold(),
+      home: const SpeedoScaffold(),
       debugShowCheckedModeBanner: false,
     );
   }
@@ -52,9 +54,11 @@ class SPDO_App extends StatelessWidget {
 
 @immutable
 class SpeedoScaffold extends StatelessWidget {
+  const SpeedoScaffold({super.key});
+
   @override
   Widget build(final BuildContext context) {
-    return Scaffold(
+    return const Scaffold(
       drawer: DrawerWidget(),
       body: SpeedListenerWidget(),
     );
@@ -63,7 +67,7 @@ class SpeedoScaffold extends StatelessWidget {
 
 @immutable
 class SpeedListenerWidget extends StatefulWidget {
-  late final SpeedReader speedReader;
+  const SpeedListenerWidget({super.key});
 
   double msToKPH(final double metersPerSecond) {
     const secondsPerHour = 60 * 60;
@@ -87,6 +91,8 @@ class _SpeedListenerWidgetState extends State<SpeedListenerWidget>
     with SingleTickerProviderStateMixin {
   Settings? settings;
 
+  late final SpeedReader speedReader;
+
   int get maxSpeed => settings?.maxSpeed ?? Settings.DEFAULT_MAX_SPEED;
   bool get metric => settings?.metric ?? false;
   bool get showTopSpeed => settings?.showTopSpeed ?? false;
@@ -96,7 +102,7 @@ class _SpeedListenerWidgetState extends State<SpeedListenerWidget>
   var _display = '';
   var _speed = 0.0;
   var _topSpeed = 0.0;
-  Image? _background;
+  late Image? _background;
 
   late Animation<double>? _animation;
   late AnimationController? _animationController;
@@ -104,14 +110,14 @@ class _SpeedListenerWidgetState extends State<SpeedListenerWidget>
   @override
   void dispose() {
     settings?.writePreferences();
-    this.widget.speedReader.cancel();
+    speedReader.cancel();
     _animationController?.dispose();
     super.dispose();
   }
 
   void initAnimationController() {
-    _animationController = new AnimationController(
-        duration: const Duration(seconds: 1), vsync: this);
+    _animationController =
+        AnimationController(duration: const Duration(seconds: 1), vsync: this);
     _animation = Tween<double>(begin: 0, end: maxSpeed * 1.1)
         .animate(_animationController!)
       ..addListener(() {
@@ -137,7 +143,7 @@ class _SpeedListenerWidgetState extends State<SpeedListenerWidget>
   }
 
   void initSpeedReader() {
-    this.widget.speedReader = SpeedReader((final Position position) {
+    speedReader = SpeedReader((final Position position) {
       setState(() {
         if (position.speedAccuracy < 0 || position.speed.isNaN) {
           return;
@@ -157,7 +163,9 @@ class _SpeedListenerWidgetState extends State<SpeedListenerWidget>
           _display = '';
         }
 
-        print(_display);
+        if (kDebugMode) {
+          print(_display);
+        }
       });
     });
   }
@@ -183,13 +191,15 @@ class _SpeedListenerWidgetState extends State<SpeedListenerWidget>
           initSpeedReader();
         });
       });
-      return _background ??
-          Center(
-            child: Text(
-              APP_NAME,
-              style: Theme.of(context).textTheme.headline1,
-            ),
-          );
+
+      return Center(
+        child: _background != null
+            ? Image(image: _background!.image)
+            : Text(
+                APP_NAME,
+                style: Theme.of(context).textTheme.displayLarge,
+              ),
+      );
     }
 
     // if we're not animating, use actual speed values
@@ -223,15 +233,14 @@ class GaugeWidget extends StatelessWidget {
   final bool showAnalog;
   final Widget? background;
 
-  GaugeWidget(final GaugeSettings settings)
+  GaugeWidget(final GaugeSettings settings, {super.key})
       : display = settings.display,
         speed = settings.speed,
         topSpeed = settings.topSpeed,
         maxSpeed = settings.maxSpeed,
         showTopSpeed = settings.showTopSpeed,
         showAnalog = settings.showAnalog,
-        background = settings.background,
-        super();
+        background = settings.background;
 
   @override
   Widget build(final BuildContext context) {

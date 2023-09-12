@@ -1,13 +1,14 @@
 import 'dart:io';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:path_provider/path_provider.dart' as PathProvider;
+import 'package:path_provider/path_provider.dart';
 
 class ImagePickerUtils {
-  static ImagePicker _picker = new ImagePicker();
+  static final ImagePicker _picker = ImagePicker();
 
   static Future<Directory> _getDirectory() async {
-    return await PathProvider.getApplicationSupportDirectory();
+    return await getApplicationSupportDirectory();
   }
 
   static Future<File?> _getImageFile() async {
@@ -16,14 +17,17 @@ class ImagePickerUtils {
       return null;
     }
     try {
-      var list = directory.listSync();
-      if (list.isEmpty) {
-        return null;
-      } else {
-        return File(list.first.path);
-      }
+      return File(directory.path);
+      // var list = directory.listSync();
+      // if (list.isEmpty) {
+      //   return null;
+      // } else {
+      //   return File(list.first.path);
+      // }
     } catch (e) {
-      print(e);
+      if (kDebugMode) {
+        print(e);
+      }
       return null;
     }
   }
@@ -57,7 +61,7 @@ class ImagePickerUtils {
       return false;
     }
     Directory directory = await _getDirectory();
-    String path = directory.path + '/' + image.name;
+    String path = '${directory.path}/${image.name}';
     image.saveTo(path);
     return true;
   }
