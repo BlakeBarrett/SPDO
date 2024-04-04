@@ -8,8 +8,11 @@ class SpeedReader {
   SpeedReader(void updateListener(Position value)) {
     _determinePosition().then((value) {
       _listener = Geolocator.getPositionStream(
-        desiredAccuracy: LocationAccuracy.bestForNavigation,
-        intervalDuration: Duration(microseconds: 0),
+        locationSettings: LocationSettings(
+          accuracy: LocationAccuracy.best,
+          distanceFilter: 1,
+          timeLimit: Duration(seconds: 1),
+        ),
       ).listen(updateListener);
     });
   }
