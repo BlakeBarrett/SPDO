@@ -4,7 +4,7 @@ import 'dart:math' as math;
 @immutable
 class AnalogGauge extends StatelessWidget {
   AnalogGauge(
-      {required final this.speed,
+      {required this.speed,
       required this.maxSpeed,
       this.color = Colors.redAccent})
       : super();
@@ -22,7 +22,7 @@ class AnalogGauge extends StatelessWidget {
 
 @immutable
 class AngledNeedle extends StatelessWidget {
-  AngledNeedle({required final this.angle, required this.color}) : super();
+  AngledNeedle({required this.angle, required this.color}) : super();
   final double angle;
   final Color color;
   @override
@@ -47,10 +47,10 @@ class AngledNeedle extends StatelessWidget {
 
 class _LinePainter extends CustomPainter {
   _LinePainter(
-      {required final this.origin,
-      required final this.destination,
-      required final this.thickness,
-      required final this.color})
+      {required this.origin,
+      required this.destination,
+      required this.thickness,
+      required this.color})
       : super();
 
   Offset origin, destination;

@@ -1,4 +1,3 @@
-import 'package:flutter/animation.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 
@@ -21,13 +20,13 @@ class GaugeSettings {
   final Widget? background;
 
   GaugeSettings({
-    required final this.display,
-    required final this.speed,
-    required final this.topSpeed,
-    required final this.maxSpeed,
-    required final this.showTopSpeed,
-    required final this.showAnalog,
-    final this.background,
+    required this.display,
+    required this.speed,
+    required this.topSpeed,
+    required this.maxSpeed,
+    required this.showTopSpeed,
+    required this.showAnalog,
+    this.background,
   });
 }
 
@@ -187,7 +186,7 @@ class _SpeedListenerWidgetState extends State<SpeedListenerWidget>
           Center(
             child: Text(
               APP_NAME,
-              style: Theme.of(context).textTheme.headline1,
+              style: Theme.of(context).textTheme.displayLarge,
             ),
           );
     }
