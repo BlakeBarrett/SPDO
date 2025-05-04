@@ -61,6 +61,47 @@ Window {
         anchors.fill: parent
         visible: SpeedReader.showAnalog
 
+        // Add a backlight glow behind the gauge with radial gradient
+        Rectangle {
+            id: gaugeBacklight
+            anchors.centerIn: parent
+            width: Math.min(parent.width, parent.height) * 0.95
+            height: width / 2  // Semi-circle for the top half
+            radius: width / 2
+            y: height  // Position to show only top half
+            
+            // Use a radial gradient for a more realistic glow effect
+            gradient: Gradient {
+                GradientStop { position: 0.7; color: "#2E90FF" } // Slightly more intense in the center
+                GradientStop { position: 0.85; color: "#1E90FF80" } // Mid-fade with 50% alpha
+                GradientStop { position: 1.0; color: "#1E90FF00" } // Completely transparent at edges
+            }
+            
+            opacity: 0.2 // Base opacity
+            
+            // Add a subtle animation to the glow
+            SequentialAnimation {
+                running: true
+                loops: Animation.Infinite
+                NumberAnimation { 
+                    target: gaugeBacklight
+                    property: "opacity"
+                    from: 0.2
+                    to: 0.3
+                    duration: 3000
+                    easing.type: Easing.InOutQuad
+                }
+                NumberAnimation { 
+                    target: gaugeBacklight
+                    property: "opacity"
+                    from: 0.3
+                    to: 0.2
+                    duration: 3000
+                    easing.type: Easing.InOutQuad
+                }
+            }
+        }
+
         // Add a gauge background/plate for better visual reference
         Rectangle {
             anchors.centerIn: parent
