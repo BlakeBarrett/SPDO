@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+    <dict>
+        <key>CFBundleExecutable</key>
+        <string>SPDO</string>
+        <key>CFBundleIconFile</key>
+        <string>Icon.icns</string>
+        <key>CFBundleIdentifier</key>
+        <string>com.blakebarrett.spdo</string>
+        <key>CFBundlePackageType</key>
+        <string>APPL</string>
+        <key>CFBundleSignature</key>
+        <string>????</string>
+        <key>LSMinimumSystemVersion</key>
+        <string>10.13</string>
+        <key>NSHumanReadableCopyright</key>
+        <string>© 2023-2025 Blake Barrett</string>
+        <key>NSLocationUsageDescription</key>
+        <string>SPDO needs access to your location to provide accurate speed readings.</string>
+        <key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+        <string>SPDO needs access to your location to provide accurate speed readings while you use the app.</string>
+        <key>NSLocationWhenInUseUsageDescription</key>
+        <string>SPDO needs access to your location to provide accurate speed readings while you use the app.</string>
+        <key>NSLocationAlwaysUsageDescription</key>
+        <string>SPDO needs access to your location to provide accurate speed readings.</string>
+    </dict>
+</plist>

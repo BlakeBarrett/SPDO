@@ -5,27 +5,37 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "SPDO",
+            "name": "SPDO Qt (Debug)",
+            "type": "cppdbg",
             "request": "launch",
-            "type": "dart"
+            "program": "${workspaceFolder}/build/SPDO.app/Contents/MacOS/SPDO",
+            "args": [],
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}",
+            "environment": [],
+            "externalConsole": false,
+            "MIMode": "lldb",
+            "preLaunchTask": "Build Qt Project"
         },
         {
-            "name": "SPDO (profile mode)",
+            "name": "SPDO Qt (Release)",
+            "type": "cppdbg",
             "request": "launch",
-            "type": "dart",
-            "flutterMode": "profile"
+            "program": "${workspaceFolder}/build/SPDO.app/Contents/MacOS/SPDO",
+            "args": [],
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}",
+            "environment": [],
+            "externalConsole": false,
+            "MIMode": "lldb"
         },
         {
-            "name": "SPDO (debug mode)",
+            "name": "SPDO Qt (CMake Launch)",
+            "type": "cmake",
             "request": "launch",
-            "type": "dart",
-            "flutterMode": "debug"
-        },
-        {
-            "name": "SPDO (release mode)",
-            "request": "launch",
-            "type": "dart",
-            "flutterMode": "release"
+            "target": "SPDO",
+            "preset": "${defaultBuildPreset}",
+            "args": []
         }
     ]
 }
