@@ -15,10 +15,10 @@
 *.iws
 .idea/
 
-# The .vscode folder contains launch configuration and tasks you configure in
-# VS Code which you may wish to be included in version control, so this line
-# is commented out by default.
-#.vscode/
+# VS Code related
+.vscode/
+!.vscode/settings.json
+!.vscode/launch.json
 
 # Flutter/Dart/Pub related
 **/doc/api/
@@ -44,6 +44,46 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+
+# Qt/QML specific
+*.o
+*.obj
+*.moc
+moc_*.cpp
+moc_*.h
+qrc_*.cpp
+ui_*.h
+*.qmlc
+*.jsc
+Makefile*
+*build-*
+*.qm
+*.prl
+*.pro.user
+*.pro.user.*
+*.qbs.user
+*.qbs.user.*
+*.moc
+*.so
+*.dll
+*.dylib
+CMakeLists.txt.user*
+build/
+.qmake.stash
+.cmake/
+CMakeCache.txt
+CMakeFiles/
+qt_build/
+
+# QtCreator
+CMakeLists.txt.user*
+*.autosave
+*.creator.user*
+*.creator.user
+*.cbp
+
+# Qt build directory
+SPDO/build/
 
 # Miscellaneous
 *.class
