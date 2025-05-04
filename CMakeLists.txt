@@ -4,12 +4,13 @@ cmake_minimum_required(VERSION 3.16)
 # Adjust this path based on your actual Qt installation location
 set(CMAKE_PREFIX_PATH "/Volumes/Macintosh SSD/Blake/Qt/6.9.0/macos")
 
-project(SPDO VERSION 0.1 LANGUAGES CXX)
+project(SPDO VERSION 2.0 LANGUAGES CXX)
 
+set(CMAKE_AUTOMOC ON)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
-
+ 
 # Find required Qt components - removing Positioning as it's not installed
-find_package(Qt6 REQUIRED COMPONENTS Quick QuickEffects)
+find_package(Qt6 REQUIRED COMPONENTS Quick QuickEffects LinguistTools)
 
 qt_standard_project_setup(REQUIRES 6.9) # Changed from 6.8 to 6.4 to match your Qt version
 
@@ -26,10 +27,30 @@ set(APP_ASSETS
     "${ASSETS_DIR}/wiper.svg"
 )
 
+# Get all translation source files
+file(GLOB TS_FILES "${CMAKE_SOURCE_DIR}/translations/*.ts")
+
+# Set up Qt Linguist tools
+qt_add_translations(SPDO
+    TS_FILES ${TS_FILES}
+    QM_FILES_OUTPUT_VARIABLE QM_FILES
+    SOURCES 
+        main.cpp
+        spdo.cpp
+        spdo.h
+        Main.qml
+)
+
+# Add the QM files to the resources
+qt_add_resources(TRANSLATIONRESOURCES
+    PREFIX "/translations"
+    FILES ${QM_FILES})
+
 qt_add_executable(SPDO
     main.cpp
     spdo.cpp
     spdo.h
+    ${TRANSLATIONRESOURCES}
 )
 
 # Set resource alias for each asset file

@@ -4,10 +4,18 @@
 #include <QCoreApplication>
 #include <QRandomGenerator>
 
+// Define version constants from CMake
+#define PROJECT_VERSION_MAJOR 0
+#define PROJECT_VERSION_MINOR 1
+
 SpeedReader::SpeedReader(QObject *parent)
     : QObject(parent), m_settings(QSettings::IniFormat, QSettings::UserScope,
                                   QCoreApplication::organizationName(), QCoreApplication::applicationName())
 {
+    // Set application name and version from CMake project configuration
+    m_appName = QCoreApplication::applicationName();
+    m_appVersion = QString("%1.%2").arg(PROJECT_VERSION_MAJOR).arg(PROJECT_VERSION_MINOR);
+
     // Initialize demo timer
     m_demoTimer = new QTimer(this);
     connect(m_demoTimer, &QTimer::timeout, this, &SpeedReader::demoUpdate);

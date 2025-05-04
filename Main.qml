@@ -1,16 +1,16 @@
-import QtQuick
-import QtQuick.Controls
-import QtQuick.Layouts
-import QtQuick.Dialogs
+import QtQuick 2.15
+import QtQuick.Controls 2.15
+import QtQuick.Layouts 1.15
+import QtQuick.Dialogs 1.3
 import QtQuick.Controls.Material 2.15
-import QtQuick.Effects
+import QtQuick.Effects 1.0
 
 Window {
     id: root
     width: 800
     height: 400
     visible: true
-    title: "SPDO"
+    title: SpeedReader.appName
     color: "#000000"
 
     // Handle close events to prevent accidental closing
@@ -97,7 +97,7 @@ Window {
                     height: 20
                     radius: 10
                     color: parent.color
-                    anchors.right: parent.right
+                    anchors.right: topSpeedLine.right
                     anchors.verticalCenter: parent.verticalCenter
                 }
             }
@@ -189,7 +189,7 @@ Window {
         anchors.right: parent.right
         anchors.bottom: parent.bottom
         anchors.margins: 8
-        text: root.visibility === Window.FullScreen ? "⊙" : "□"
+        text: root.visibility === Window.FullScreen ? qsTr("⊙") : qsTr("□")
         font.pixelSize: 24
         opacity: 0.3
 
@@ -210,7 +210,7 @@ Window {
         anchors.left: parent.left
         anchors.bottom: parent.bottom
         anchors.margins: 8
-        text: "⚙"
+        text: qsTr("⚙")
         font.pixelSize: 24
         opacity: 0.3
 
@@ -232,7 +232,7 @@ Window {
             padding: 10
 
             Text {
-                text: "Settings"
+                text: qsTr("Settings")
                 font.pixelSize: 24
                 font.bold: true
             }
@@ -266,7 +266,7 @@ Window {
                 }
 
                 Button {
-                    text: "Choose Background"
+                    text: qsTr("Choose Background")
                     Layout.fillWidth: true
                     onClicked: {
                         backgroundDialog.open();
@@ -274,7 +274,7 @@ Window {
                 }
 
                 Button {
-                    text: "Clear"
+                    text: qsTr("Clear")
                     onClicked: {
                         speedReader.setBackgroundImagePath("");
                     }
@@ -291,7 +291,7 @@ Window {
             RowLayout {
                 width: parent.width - 20
                 Text {
-                    text: "Units: MPH | km/h"
+                    text: qsTr("Units: MPH | km/h")
                     font.bold: true
                     Layout.fillWidth: true
                 }
@@ -317,7 +317,7 @@ Window {
                 }
 
                 Text {
-                    text: "Digital Display"
+                    text: qsTr("Digital Display")
                     Layout.fillWidth: true
                 }
 
@@ -351,7 +351,7 @@ Window {
                 }
 
                 Text {
-                    text: "Analog Display"
+                    text: qsTr("Analog Display")
                     Layout.fillWidth: true
                 }
 
@@ -386,7 +386,7 @@ Window {
                 }
 
                 Text {
-                    text: "Max Speed"
+                    text: qsTr("Max Speed")
                     font.bold: true
                     Layout.fillWidth: true
                 }
@@ -428,7 +428,7 @@ Window {
                 }
 
                 Text {
-                    text: "Show Top Speed"
+                    text: qsTr("Show Top Speed")
                     Layout.fillWidth: true
                 }
 
@@ -460,7 +460,7 @@ Window {
 
                     Button {
                         id: demoModeButton
-                        text: "Demo Mode"
+                        text: qsTr("Demo Mode")
                         Layout.fillWidth: true
                         highlighted: !speedReader.gpsActive
 
@@ -472,7 +472,7 @@ Window {
 
                     Button {
                         id: gpsModeButton
-                        text: "GPS Mode"
+                        text: qsTr("GPS Mode")
                         Layout.fillWidth: true
                         highlighted: speedReader.gpsActive
 
@@ -528,7 +528,7 @@ Window {
                 }
 
                 Button {
-                    text: "About SPDO"
+                    text: qsTr("About %1").arg(SpeedReader.appName)
                     Layout.fillWidth: true
                     onClicked: {
                         aboutDialog.open();
@@ -552,8 +552,8 @@ Window {
     // Background image file dialog
     FileDialog {
         id: backgroundDialog
-        title: "Choose a background image"
-        nameFilters: ["Image files (*.png *.jpg *.jpeg)"]
+        title: qsTr("Choose a background image")
+        nameFilters: [qsTr("Image files") + " (*.png *.jpg *.jpeg)"]
         onAccepted: {
             speedReader.setBackgroundImagePath(selectedFile);
         }
@@ -562,7 +562,7 @@ Window {
     // Confirm exit dialog
     Dialog {
         id: confirmCloseDialog
-        title: "Exit SPDO?"
+        title: qsTr("Exit %1?").arg(SpeedReader.appName)
         modal: true
         standardButtons: Dialog.Yes | Dialog.No
         closePolicy: Popup.CloseOnEscape
@@ -575,7 +575,7 @@ Window {
 
         Text {
             width: parent.width
-            text: "Are you sure you want to exit the application?"
+            text: qsTr("Are you sure you want to exit the application?")
             wrapMode: Text.WordWrap
             horizontalAlignment: Text.AlignHCenter
         }
@@ -584,7 +584,7 @@ Window {
     // About dialog
     Dialog {
         id: aboutDialog
-        title: "About SPDO"
+        title: qsTr("About SPDO")
         standardButtons: Dialog.Ok
         anchors.centerIn: Overlay.overlay
         width: Math.min(root.width * 0.7, 400)
@@ -603,13 +603,13 @@ Window {
             }
 
             Text {
-                text: "SPDO v1.0.0"
+                text: qsTr("%1 v%2").arg(SpeedReader.appName).arg(SpeedReader.appVersion)
                 font.bold: true
                 Layout.alignment: Qt.AlignHCenter
             }
 
             Text {
-                text: "It's a speedometer."
+                text: qsTr("It's a speedometer.")
                 Layout.alignment: Qt.AlignHCenter
             }
         }
@@ -706,7 +706,7 @@ Window {
 
             // Tooltip
             ToolTip.visible: hovered
-            ToolTip.text: "Toggle Digital Display"
+            ToolTip.text: qsTr("Toggle Digital Display")
             ToolTip.delay: 1000
         }
 
@@ -747,7 +747,7 @@ Window {
 
             // Tooltip
             ToolTip.visible: hovered
-            ToolTip.text: "Toggle Analog Display"
+            ToolTip.text: qsTr("Toggle Analog Display")
             ToolTip.delay: 1000
         }
 
@@ -788,7 +788,7 @@ Window {
 
             // Tooltip
             ToolTip.visible: hovered
-            ToolTip.text: "Toggle Top Speed Indicator"
+            ToolTip.text: qsTr("Toggle Top Speed Indicator")
             ToolTip.delay: 1000
         }
 
@@ -800,7 +800,7 @@ Window {
 
             // Show an X icon for reset
             contentItem: Text {
-                text: "↺"
+                text: qsTr("↺")
                 font.pixelSize: 24
                 color: "white"
                 horizontalAlignment: Text.AlignHCenter
@@ -819,7 +819,7 @@ Window {
 
             // Tooltip
             ToolTip.visible: hovered
-            ToolTip.text: "Reset Top Speed"
+            ToolTip.text: qsTr("Reset Top Speed")
             ToolTip.delay: 1000
         }
 
@@ -831,7 +831,7 @@ Window {
 
             // Show text label for units
             contentItem: Text {
-                text: speedReader.metric ? "km/h" : "MPH"
+                text: speedReader.metric ? qsTr("km/h") : qsTr("MPH")
                 font.pixelSize: 10
                 font.bold: true
                 color: "white"
@@ -851,7 +851,7 @@ Window {
 
             // Tooltip
             ToolTip.visible: hovered
-            ToolTip.text: "Toggle Units: " + (speedReader.metric ? "km/h" : "MPH")
+            ToolTip.text: qsTr("Toggle Units: ") + (speedReader.metric ? "km/h" : "MPH")
             ToolTip.delay: 1000
         }
     }

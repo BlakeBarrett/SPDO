@@ -21,6 +21,8 @@ class SpeedReader : public QObject
     Q_PROPERTY(QString displayText READ displayText NOTIFY displayTextChanged)
     Q_PROPERTY(QString backgroundImagePath READ backgroundImagePath WRITE setBackgroundImagePath NOTIFY backgroundImagePathChanged)
     Q_PROPERTY(bool gpsActive READ gpsActive NOTIFY gpsActiveChanged)
+    Q_PROPERTY(QString appName READ appName CONSTANT)
+    Q_PROPERTY(QString appVersion READ appVersion CONSTANT)
 
 public:
     explicit SpeedReader(QObject *parent = nullptr);
@@ -37,6 +39,8 @@ public:
     QString displayText() const { return m_displayText; }
     QString backgroundImagePath() const { return m_backgroundImagePath; }
     bool gpsActive() const { return m_gpsActive; }
+    QString appName() const { return m_appName; }
+    QString appVersion() const { return m_appVersion; }
 
     // Property setters
     void setTopSpeed(double topSpeed);
@@ -97,6 +101,8 @@ private:
     bool m_demoIncreasing = true;
     bool m_gpsActive = false;
     QString m_gpsStatus = "GPS not active";
+    QString m_appName = "Speedometer";
+    QString m_appVersion = "1.0.0";
 };
 
 #endif // SPDO_H
