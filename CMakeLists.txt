@@ -1,77 +1,59 @@
 cmake_minimum_required(VERSION 3.16)
 
 # Set the path to your Qt installation
-# Adjust this path based on your actual Qt installation location
-set(CMAKE_PREFIX_PATH "/Volumes/Macintosh SSD/Blake/Qt/6.9.0/macos")
+# Platform-specific paths handled via conditional logic
+if(APPLE)
+    # Default macOS Qt location
+    set(CMAKE_PREFIX_PATH "/Users/Blake/Qt/6.9.0/macos")
+else()
+    # Linux Qt location
+    set(CMAKE_PREFIX_PATH "/media/ntfs/Users/Blake/Qt/6.9.0/gcc_64")
+endif()
 
 project(SPDO VERSION 2.0 LANGUAGES CXX)
 
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
- 
-# Find required Qt components - removing Positioning as it's not installed
-find_package(Qt6 REQUIRED COMPONENTS Quick QuickEffects LinguistTools)
 
-qt_standard_project_setup(REQUIRES 6.9) # Changed from 6.8 to 6.4 to match your Qt version
+# Find required Qt components
+find_package(Qt6 REQUIRED COMPONENTS Quick Qml Gui)
 
-# Set up assets directory - modified to use file() command with QT_RESOURCE_ALIAS property
+qt_standard_project_setup(REQUIRES 6.9)
+
+# Copy Main.qml directly to the build directory
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/Main.qml ${CMAKE_CURRENT_BINARY_DIR}/Main.qml COPYONLY)
+
+# Instead of using qt_add_resources, let's use file(COPY) to copy assets to the build directory
 set(ASSETS_DIR "${CMAKE_CURRENT_SOURCE_DIR}/assets")
+set(BUILD_ASSETS_DIR "${CMAKE_CURRENT_BINARY_DIR}/assets")
 
-# Define the assets individually to set the resource alias
-set(APP_ASSETS
-    "${ASSETS_DIR}/car-cruise-control.svg"
-    "${ASSETS_DIR}/icon.png"
-    "${ASSETS_DIR}/icon.svg"
-    "${ASSETS_DIR}/max-speed.svg"
-    "${ASSETS_DIR}/numeric.svg"
-    "${ASSETS_DIR}/wiper.svg"
-)
+# Make sure the destination directory exists
+file(MAKE_DIRECTORY ${BUILD_ASSETS_DIR})
 
-# Get all translation source files
-file(GLOB TS_FILES "${CMAKE_SOURCE_DIR}/translations/*.ts")
+# Copy the assets to the build directory
+file(COPY ${ASSETS_DIR}/ DESTINATION ${BUILD_ASSETS_DIR})
 
-# Set up Qt Linguist tools
-qt_add_translations(SPDO
-    TS_FILES ${TS_FILES}
-    QM_FILES_OUTPUT_VARIABLE QM_FILES
-    SOURCES 
-        main.cpp
-        spdo.cpp
-        spdo.h
-        Main.qml
-)
-
-# Add the QM files to the resources
-qt_add_resources(TRANSLATIONRESOURCES
-    PREFIX "/translations"
-    FILES ${QM_FILES})
-
-qt_add_executable(SPDO
+# Change the target name to SPDO_APP
+qt_add_executable(SPDO_APP
     main.cpp
     spdo.cpp
     spdo.h
-    ${TRANSLATIONRESOURCES}
 )
 
-# Set resource alias for each asset file
-foreach(ASSET_FILE ${APP_ASSETS})
-    get_filename_component(ASSET_NAME ${ASSET_FILE} NAME)
-    set_source_files_properties(${ASSET_FILE} PROPERTIES QT_RESOURCE_ALIAS "assets/${ASSET_NAME}")
-endforeach()
+# Set the output name to "SPDO_exe" to avoid conflicts with directories
+set_target_properties(SPDO_APP PROPERTIES OUTPUT_NAME "SPDO_exe")
 
-qt_add_qml_module(SPDO
+qt_add_qml_module(SPDO_APP
     URI SPDO
     VERSION 2.0
     QML_FILES
         Main.qml
-    RESOURCES
-        ${APP_ASSETS}
 )
 
 # Qt for iOS sets MACOSX_BUNDLE_GUI_IDENTIFIER automatically since Qt 6.1.
 # If you are developing for iOS or macOS you should consider setting an
 # explicit, fixed bundle identifier manually though.
-set_target_properties(SPDO PROPERTIES
+set_target_properties(SPDO_APP PROPERTIES
     MACOSX_BUNDLE_GUI_IDENTIFIER com.blakebarrett.spdo
     MACOSX_BUNDLE_BUNDLE_VERSION ${PROJECT_VERSION}
     MACOSX_BUNDLE_SHORT_VERSION_STRING ${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}
@@ -81,19 +63,23 @@ set_target_properties(SPDO PROPERTIES
 
 # Include the Info.plist file for macOS
 if(APPLE)
-    set_target_properties(SPDO PROPERTIES
+    set_target_properties(SPDO_APP PROPERTIES
         MACOSX_BUNDLE_INFO_PLIST ${CMAKE_CURRENT_SOURCE_DIR}/Info.plist
     )
 endif()
 
-target_link_libraries(SPDO
+target_link_libraries(SPDO_APP
     PRIVATE Qt6::Quick
-    PRIVATE Qt6::QuickEffects
 )
 
 include(GNUInstallDirs)
-install(TARGETS SPDO
+install(TARGETS SPDO_APP
     BUNDLE DESTINATION .
     LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
     RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+)
+
+# Install assets alongside the executable
+install(DIRECTORY ${ASSETS_DIR}/ 
+    DESTINATION ${CMAKE_INSTALL_BINDIR}/assets
 )

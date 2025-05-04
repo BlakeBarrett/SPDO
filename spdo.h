@@ -42,14 +42,14 @@ public:
     QString appName() const { return m_appName; }
     QString appVersion() const { return m_appVersion; }
 
-    // Property setters
-    void setTopSpeed(double topSpeed);
-    void setMetric(bool metric);
-    void setMaxSpeed(int maxSpeed);
-    void setShowDigital(bool showDigital);
-    void setShowAnalog(bool showAnalog);
-    void setShowTopSpeed(bool showTopSpeed);
-    void setBackgroundImagePath(const QString &path);
+    // Property setters - add Q_INVOKABLE to ensure they're accessible from QML
+    Q_INVOKABLE void setTopSpeed(double topSpeed);
+    Q_INVOKABLE void setMetric(bool metric);
+    Q_INVOKABLE void setMaxSpeed(int maxSpeed);
+    Q_INVOKABLE void setShowDigital(bool showDigital);
+    Q_INVOKABLE void setShowAnalog(bool showAnalog);
+    Q_INVOKABLE void setShowTopSpeed(bool showTopSpeed);
+    Q_INVOKABLE void setBackgroundImagePath(const QString &path);
 
     // Helper methods exposed to QML
     Q_INVOKABLE void resetTopSpeed() { setTopSpeed(0.0); }

@@ -63,7 +63,7 @@
         <source>SPDO v1.0.0
 
 It's a speedometer.</source>
-        <translation>SPDO v1.0.0
+        <translation>SPDO v2.0.0
 
 Es un velocímetro.</translation>
     </message>
