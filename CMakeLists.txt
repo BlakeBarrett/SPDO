@@ -1,14 +1,25 @@
 cmake_minimum_required(VERSION 3.16)
 
-# Set the path to your Qt installation
-# Platform-specific paths handled via conditional logic
-if(APPLE)
-    # Default macOS Qt location
-    set(CMAKE_PREFIX_PATH "/Users/Blake/Qt/6.9.0/macos")
-else()
-    # Linux Qt location
-    set(CMAKE_PREFIX_PATH "/media/ntfs/Users/Blake/Qt/6.9.0/gcc_64")
+# Set the path to your Qt installation using more flexible approach
+# First check for CMAKE_PREFIX_PATH passed on command line, then try environment variables
+if(NOT CMAKE_PREFIX_PATH)
+    if(APPLE)
+        # For macOS, try common Qt locations
+        if(EXISTS "/Volumes/Macintosh SSD/Blake/Qt/6.9.0/macos")
+            set(CMAKE_PREFIX_PATH "/Volumes/Macintosh SSD/Blake/Qt/6.9.0/macos")
+        elseif(EXISTS "/Users/blake/Qt/6.9.0/macos")
+            set(CMAKE_PREFIX_PATH "/Users/blake/Qt/6.9.0/macos")
+        endif()
+    else()
+        # Linux Qt location
+        if(EXISTS "/media/ntfs/Users/Blake/Qt/6.9.0/gcc_64")
+            set(CMAKE_PREFIX_PATH "/media/ntfs/Users/Blake/Qt/6.9.0/gcc_64")
+        endif()
+    endif()
 endif()
+
+# Print the prefix path for debugging
+message(STATUS "Using Qt from: ${CMAKE_PREFIX_PATH}")
 
 project(SPDO VERSION 2.0 LANGUAGES CXX)
 
