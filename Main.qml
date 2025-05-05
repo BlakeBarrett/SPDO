@@ -7,8 +7,8 @@ import com.blakebarrett.spdo 2.0
 
 Window {
     id: root
-    width: 1024
-    height: 1024
+    width: 1200
+    height: 600
     visible: true
     title: SpeedReader.appName
     color: "#000000"
@@ -16,8 +16,8 @@ Window {
     // Handle close events to prevent accidental closing
     onClosing: function (close) {
         if (!confirmCloseDialog.visible) {
-            close.accepted = false;
-            confirmCloseDialog.open();
+            close.accepted = false
+            confirmCloseDialog.open()
         }
     }
 
@@ -25,7 +25,7 @@ Window {
     SequentialAnimation {
         running: true
         ScaleAnimator {
-            target: analogNeedle
+            target: speedNeedle
             from: 0
             to: 1
             duration: 500
@@ -55,212 +55,238 @@ Window {
         visible: SpeedReader.showDigital
     }
 
-    // Analog gauge components
+    // Classic car speedometer - styled after 1977 GMC Sprint dashboard
     Item {
-        id: analogGauge
+        id: classicSpeedometer
         anchors.fill: parent
         visible: SpeedReader.showAnalog
 
-        // Add a backlight glow behind the gauge with radial gradient
+        // Gauge backlight/glow effect
         Rectangle {
             id: gaugeBacklight
             anchors.centerIn: parent
-            width: Math.min(parent.width, parent.height) * 0.95
-            height: width / 2  // Semi-circle for the top half
-            radius: width / 2
-            y: height  // Position to show only top half
-            
-            // Use a radial gradient for a more realistic glow effect
-            gradient: Gradient {
-                GradientStop { position: 0.7; color: "#2E90FF" } // Slightly more intense in the center
-                GradientStop { position: 0.85; color: "#1E90FF80" } // Mid-fade with 50% alpha
-                GradientStop { position: 1.0; color: "#1E90FF00" } // Completely transparent at edges
-            }
-            
-            opacity: 0.2 // Base opacity
-            
-            // Add a subtle animation to the glow
-            SequentialAnimation {
-                running: true
-                loops: Animation.Infinite
-                NumberAnimation { 
-                    target: gaugeBacklight
-                    property: "opacity"
-                    from: 0.2
-                    to: 0.3
-                    duration: 3000
-                    easing.type: Easing.InOutQuad
-                }
-                NumberAnimation { 
-                    target: gaugeBacklight
-                    property: "opacity"
-                    from: 0.3
-                    to: 0.2
-                    duration: 3000
-                    easing.type: Easing.InOutQuad
-                }
-            }
-        }
-
-        // Add a gauge background/plate for better visual reference
-        Rectangle {
-            anchors.centerIn: parent
-            width: Math.min(parent.width, parent.height) * 0.9
-            height: width / 2  // Semi-circle for the top half
-            radius: width / 2
-            y: height  // Position to show only top half
-            color: "#333333"
-            opacity: 0.3
-        }
-
-        // Top speed indicator (green needle)
-        Item {
-            id: topSpeedNeedle
-            anchors.centerIn: parent
             width: parent.width
             height: parent.height
-            visible: SpeedReader.showTopSpeed && SpeedReader.topSpeed > 0
-
-            Rectangle {
-                id: topSpeedLine
-                width: Math.min(parent.width, parent.height) * 0.45
-                height: 8
-                color: "#4CAF50" // green
-                anchors.right: parent.horizontalCenter
-                anchors.verticalCenter: parent.verticalCenter
-                transformOrigin: Item.Right
-                // Rotate from -90 (left/0 speed) to +90 (right/max speed)
-                // Use topSpeed directly, as it's always in KPH internally
-                rotation: ((SpeedReader.topSpeed / SpeedReader.maxSpeed) * 90)
-
-                Rectangle {
-                    width: 20
-                    height: 20
-                    radius: 10
-                    color: parent.color
-                    anchors.horizontalCenter: topSpeedLine.right
-                    anchors.verticalCenter: parent.verticalCenter
-                }
-            }
-        }
-
-        // Current speed indicator (red needle)
-        Item {
-            id: analogNeedle
-            anchors.centerIn: parent
-            width: parent.width
-            height: parent.height
-
-            Rectangle {
-                id: needleLine
-                width: Math.min(parent.width, parent.height) * 0.45
-                height: 8
-                color: "#F44336" // red
-                anchors.right: parent.horizontalCenter
-                anchors.verticalCenter: parent.verticalCenter
-                transformOrigin: Item.Right
-                // Rotate from -90 (left/0 speed) to +90 (right/max speed)
-                // Use SpeedReader.speed directly, as it's always in KPH internally
-                rotation: ((SpeedReader.speed / SpeedReader.maxSpeed) * 90)
-
-                Rectangle {
-                    width: 20
-                    height: 20
-                    radius: 10
-                    color: parent.color
-                    anchors.horizontalCenter: parent.right
-                    anchors.verticalCenter: parent.verticalCenter
-                }
-            }
-        }
-
-        // Center dot
-        Rectangle {
-            width: 16
-            height: 16
+            color: "#000000"
+            opacity: 0.2
             radius: 8
-            color: "#FFFFFF"
-            anchors.centerIn: parent
-        }
 
-        // Speed markings (tick marks)
-        Repeater {
-            model: 11 // 0 to max speed in 10 increments
-            
-            Item {
-                id: tickItem
-                anchors.centerIn: parent
-                width: Math.min(parent.width, parent.height) // Ensure the item spans the full gauge width
-                height: width
-                
-                // Apply the rotation to the whole item
-                rotation: -90 + (index * 180) / 10
-                
-                // Tick mark
+            // Subtle backlight effect
+            Rectangle {
+                anchors.fill: parent
+                color: "#000000"
+                radius: 8
+
+                // Subtle blue gradient for backlight - classic 70s dashboard look
                 Rectangle {
-                    width: 2
-                    height: 10
-                    color: "white"
-                    anchors.horizontalCenter: parent.horizontalCenter
-                    y: parent.height * 0.08 // Position from center to edge of the gauge
+                    anchors.fill: parent
+                    radius: 8
+                    gradient: Gradient {
+                        GradientStop {
+                            position: 0.0
+                            color: "#000000"
+                        }
+                        GradientStop {
+                            position: 0.5
+                            color: "#101825"
+                        }
+                        GradientStop {
+                            position: 1.0
+                            color: "#000000"
+                        }
+                    }
+
+                    // Add a subtle animation to the glow
+                    SequentialAnimation {
+                        running: true
+                        loops: Animation.Infinite
+                        NumberAnimation {
+                            target: gaugeBacklight
+                            property: "opacity"
+                            from: 0.9
+                            to: 1.0
+                            duration: 3000
+                            easing.type: Easing.InOutQuad
+                        }
+                        NumberAnimation {
+                            target: gaugeBacklight
+                            property: "opacity"
+                            from: 1.0
+                            to: 0.9
+                            duration: 3000
+                            easing.type: Easing.InOutQuad
+                        }
+                    }
                 }
-                
-                // Speed label
-                // Text {
-                //     visible: index % 2 === 0 // Only show at even intervals
-                //     text: Math.round((index / 10) * SpeedReader.maxSpeed)
-                //     color: "white"
-                //     font.pixelSize: 12
-                //     anchors.horizontalCenter: parent.horizontalCenter
-                //     y: parent.height * 0.05 // Position above the tick marks
-                //     rotation: -(-90 + (index * 180) / 10) // Counter-rotate to keep text upright
-                // }
+            }
+
+            // Main speedometer scale background - long horizontal design
+            Rectangle {
+                id: scaleBackground
+                anchors.centerIn: parent
+                width: parent.width * 0.95
+                height: parent.height * 0.8
+                color: "#000000"
+                opacity: 0.8
+                radius: 8
+
+                // Speed markings container
+                Item {
+                    id: speedScale
+                    anchors.fill: parent
+                    // anchors.topMargin: parent.height * 0.1
+                    // anchors.bottomMargin: parent.height * 0.35
+
+                    // Generate the speed markings horizontally instead of in a semi-circle
+                    Repeater {
+                        model: 11 // 0-100 mph in steps of 10
+
+                        Item {
+                            property int speedValue: index * 10
+                            property real position: index / 10
+
+                            // Position along the horizontal gauge
+                            x: parent.width * 0.05 + (parent.width * 0.9 * position)
+                            y: 0
+                            width: 2
+                            height: parent.height
+
+                            // Speed value text - MPH
+                            Text {
+                                anchors.horizontalCenter: parent.horizontalCenter
+                                y: 0
+                                text: speedValue
+                                color: "white"
+                                font.pixelSize: 18
+                                font.bold: true
+                            }
+
+                            // Second km/h scale below (in blue/teal like vintage dash)
+                            Text {
+                                anchors.horizontalCenter: parent.horizontalCenter
+                                y: parent.height * 0.6
+                                text: Math.round(
+                                          speedValue * 1.60934) // Convert mph to km/h
+                                color: "#5CCFE6" // Light blue/teal color for km/h
+                                font.pixelSize: 14
+                            }
+
+                            // Main tick mark
+                            Rectangle {
+                                width: 2
+                                height: parent.height * 0.3
+                                anchors.horizontalCenter: parent.horizontalCenter
+                                anchors.top: parent.top
+                                anchors.topMargin: parent.height * 0.25
+                                color: "white"
+                            }
+                        }
+                    }
+
+                    // Minor tick marks between the major ones
+                    Repeater {
+                        model: 100 // 0-100 mph in steps of 1
+
+                        Rectangle {
+                            property int speedValue: index
+                            property real position: index / 100
+                            visible: index % 10 !== 0
+                                     && index % 5 === 0 // Only show at 5, 15, 25, etc.
+
+                            // Position along the horizontal gauge
+                            x: parent.width * 0.05 + (parent.width * 0.9 * position)
+                            y: parent.height * 0.25
+                            width: 1
+                            height: parent.height * 0.15
+                            color: "white"
+                        }
+                    }
+
+                    // Smallest tick marks
+                    Repeater {
+                        model: 100 // 0-100 mph in steps of 1
+
+                        Rectangle {
+                            property int speedValue: index
+                            property real position: index / 100
+                            visible: index % 5 !== 0 // Show at 1,2,3,4, 6,7,8,9, etc.
+
+                            // Position along the horizontal gauge
+                            x: parent.width * 0.05 + (parent.width * 0.9 * position)
+                            y: parent.height * 0.25
+                            width: 1
+                            height: parent.height * 0.1
+                            color: "white"
+                            opacity: 0.7
+                        }
+                    }
+                }
             }
         }
-    }
 
-    // Fullscreen button (bottom right)
-    Button {
-        id: fullscreenButton
-        width: 48
-        height: 48
-        anchors.right: parent.right
-        anchors.bottom: parent.bottom
-        anchors.margins: 8
-        opacity: 0.8 // Increased opacity for better visibility
-        
-        // Add a background for better visibility
-        background: Rectangle {
-            color: "#444444"
-            radius: 5
-            border.color: "#666666"
-            border.width: 1
+        // Needle pivot point (the round center where the needle rotates)
+        Rectangle {
+            id: needlePivot
+            width: 20
+            height: 20
+            radius: 10
+            color: "#333333"
+            border.color: "#888888"
+            border.width: 2
+            anchors.bottom: parent.bottom
+            anchors.bottomMargin: parent.height * 0.15
+            anchors.horizontalCenter: parent.horizontalCenter
+            z: 10 // Make sure it's above the needle
         }
 
-        contentItem: Text {
-            text: root.visibility === Window.FullScreen ? qsTr("⊙") : qsTr("□")
-            color: "white"
-            font.pixelSize: 24
-            horizontalAlignment: Text.AlignHCenter
-            verticalAlignment: Text.AlignVCenter
-        }
+        // Speed needle (colored red like in the image)
+        Item {
+            id: speedNeedle
+            anchors.bottom: needlePivot.verticalCenter
+            anchors.horizontalCenter: needlePivot.horizontalCenter
+            width: 4
+            height: classicSpeedometer.height
+            transformOrigin: Item.Bottom
 
-        // Use a more compatible approach for fullscreen toggling on Linux
-        onClicked: {
-            if (root.visibility === Window.FullScreen) {
-                // Exit fullscreen
-                root.showNormal();
-            } else {
-                // Enter fullscreen with a more explicit method
-                root.showFullScreen();
+            // Use speed to calculate position on horizontal scale
+            // 0 MPH = -90 degrees, 100 MPH = +90 degrees
+            rotation: -90 + ((SpeedReader.speed / SpeedReader.maxSpeed) * 180)
+
+            // Add smooth animation to needle movement
+            Behavior on rotation {
+                NumberAnimation {
+                    duration: 100 // 1/10th of a second
+                    easing.type: Easing.Linear
+                }
+            }
+
+            Rectangle {
+                id: needleBody
+                anchors.bottom: parent.bottom
+                width: parent.width
+                height: parent.height
+                color: "#F44336" // Red color as in the image
+            }
+
+            // Needle arrow point
+            Canvas {
+                anchors.top: parent.top
+                anchors.horizontalCenter: parent.horizontalCenter
+                width: 12
+                height: 12
+
+                onPaint: {
+                    var ctx = getContext("2d")
+                    ctx.fillStyle = "#F44336"
+                    ctx.beginPath()
+                    ctx.moveTo(width / 2, 0)
+                    ctx.lineTo(width, height)
+                    ctx.lineTo(0, height)
+                    ctx.closePath()
+                    ctx.fill()
+                }
             }
         }
-        
-        // Add tooltip for clarity
-        ToolTip.visible: hovered
-        ToolTip.text: root.visibility === Window.FullScreen ? 
-                      qsTr("Exit Fullscreen") : qsTr("Enter Fullscreen")
-        ToolTip.delay: 500
     }
 
     // Settings button (bottom left)
@@ -271,8 +297,8 @@ Window {
         anchors.left: parent.left
         anchors.bottom: parent.bottom
         anchors.margins: 8
-        opacity: 0.8 // Increased opacity for better visibility
-        
+        opacity: 0.8
+
         // Add a background for better visibility
         background: Rectangle {
             color: "#444444"
@@ -290,13 +316,60 @@ Window {
         }
 
         onClicked: {
-            drawer.open();
+            drawer.open()
         }
-        
+
         // Add tooltip for clarity
-        ToolTip.visible: hovered
-        ToolTip.text: qsTr("Open Settings")
-        ToolTip.delay: 500
+        ToolTip {
+            visible: parent.hovered
+            text: qsTr("Open Settings")
+            delay: 500
+        }
+    }
+
+    // Fullscreen button (bottom right)
+    Button {
+        id: fullscreenButton
+        width: 48
+        height: 48
+        anchors.right: parent.right
+        anchors.bottom: parent.bottom
+        anchors.margins: 8
+        opacity: 0.8
+
+        // Add a background for better visibility
+        background: Rectangle {
+            color: "#444444"
+            radius: 5
+            border.color: "#666666"
+            border.width: 1
+        }
+
+        contentItem: Text {
+            text: root.visibility === Window.FullScreen ? qsTr("⊙") : qsTr("□")
+            color: "white"
+            font.pixelSize: 24
+            horizontalAlignment: Text.AlignHCenter
+            verticalAlignment: Text.AlignVCenter
+        }
+
+        onClicked: {
+            if (root.visibility === Window.FullScreen) {
+                // Exit fullscreen
+                root.showNormal()
+            } else {
+                // Enter fullscreen
+                root.showFullScreen()
+            }
+        }
+
+        // Add tooltip for clarity
+        ToolTip {
+            visible: parent.hovered
+            text: root.visibility === Window.FullScreen ? qsTr("Exit Fullscreen") : qsTr(
+                                                              "Enter Fullscreen")
+            delay: 500
+        }
     }
 
     // Settings drawer
@@ -306,10 +379,10 @@ Window {
         height: parent.height
         edge: Qt.LeftEdge
 
-        Column {
+        ColumnLayout {
             anchors.fill: parent
             spacing: 10
-            padding: 10
+            anchors.margins: 10
 
             Text {
                 text: qsTr("Settings")
@@ -318,14 +391,14 @@ Window {
             }
 
             Rectangle {
-                width: parent.width - 20
-                height: 1
+                Layout.preferredWidth: parent.width - 20
+                Layout.preferredHeight: 1
                 color: "#CCCCCC"
             }
 
             // Background image chooser
             RowLayout {
-                width: parent.width - 20
+                Layout.preferredWidth: parent.width - 20
 
                 Button {
                     text: "\ue3b6" // Material Icon: photo
@@ -341,7 +414,7 @@ Window {
                     }
 
                     onClicked: {
-                        backgroundDialog.open();
+                        backgroundDialog.open()
                     }
                 }
 
@@ -349,27 +422,27 @@ Window {
                     text: qsTr("Choose Background")
                     Layout.fillWidth: true
                     onClicked: {
-                        backgroundDialog.open();
+                        backgroundDialog.open()
                     }
                 }
 
                 Button {
                     text: qsTr("Clear")
                     onClicked: {
-                        SpeedReader.setBackgroundImagePath("");
+                        SpeedReader.setBackgroundImagePath("")
                     }
                 }
             }
 
             Rectangle {
-                width: parent.width - 20
-                height: 1
+                Layout.preferredWidth: parent.width - 20
+                Layout.preferredHeight: 1
                 color: "#CCCCCC"
             }
 
             // Units switch
             RowLayout {
-                width: parent.width - 20
+                Layout.preferredWidth: parent.width - 20
                 Text {
                     text: qsTr("Units: MPH | km/h")
                     font.bold: true
@@ -378,19 +451,19 @@ Window {
                 Switch {
                     checked: SpeedReader.metric
                     onCheckedChanged: {
-                        SpeedReader.setMetric(checked);
+                        SpeedReader.setMetric(checked)
                     }
                 }
             }
 
             // Digital display switch
             RowLayout {
-                width: parent.width - 20
+                Layout.preferredWidth: parent.width - 20
 
                 Image {
                     source: "file:assets/numeric.svg"
-                    width: 24
-                    height: 24
+                    Layout.preferredWidth: 24
+                    Layout.preferredHeight: 24
                     Layout.alignment: Qt.AlignVCenter
                     sourceSize.width: 24
                     sourceSize.height: 24
@@ -404,24 +477,24 @@ Window {
                 Switch {
                     checked: SpeedReader.showDigital
                     onCheckedChanged: {
-                        SpeedReader.setShowDigital(checked);
+                        SpeedReader.setShowDigital(checked)
                     }
                 }
             }
 
             // Analog display switch
             RowLayout {
-                width: parent.width - 20
+                Layout.preferredWidth: parent.width - 20
 
                 Image {
                     source: "file:assets/wiper.svg"
-                    width: 24
-                    height: 24
+                    Layout.preferredWidth: 24
+                    Layout.preferredHeight: 24
                     Layout.alignment: Qt.AlignVCenter
                     sourceSize.width: 24
                     sourceSize.height: 24
 
-                    // Replace MultiEffect with a simple colored Rectangle
+                    // Simple colored Rectangle overlay
                     Rectangle {
                         anchors.fill: parent
                         color: "#F44336" // Red color
@@ -437,25 +510,25 @@ Window {
                 Switch {
                     checked: SpeedReader.showAnalog
                     onCheckedChanged: {
-                        SpeedReader.setShowAnalog(checked);
+                        SpeedReader.setShowAnalog(checked)
                     }
                 }
             }
 
-            // Max Speed setting (only visible when analog is enabled)
+            // Max Speed setting
             RowLayout {
-                width: parent.width - 20
+                Layout.preferredWidth: parent.width - 20
                 visible: SpeedReader.showAnalog
 
                 Image {
                     source: "file:assets/max-speed.svg"
-                    width: 24
-                    height: 24
+                    Layout.preferredWidth: 24
+                    Layout.preferredHeight: 24
                     Layout.alignment: Qt.AlignVCenter
                     sourceSize.width: 24
                     sourceSize.height: 24
 
-                    // Replace MultiEffect with a simple Rectangle overlay
+                    // Simple Rectangle overlay
                     Rectangle {
                         anchors.fill: parent
                         color: "#F44336" // Red color
@@ -474,7 +547,7 @@ Window {
                     to: 200
                     value: SpeedReader.maxSpeed
                     onValueModified: {
-                        SpeedReader.setMaxSpeed(value);
+                        SpeedReader.setMaxSpeed(value)
                     }
                 }
 
@@ -486,17 +559,17 @@ Window {
 
             // Top speed indicator switch
             RowLayout {
-                width: parent.width - 20
+                Layout.preferredWidth: parent.width - 20
 
                 Image {
                     source: "file:assets/car-cruise-control.svg"
-                    width: 24
-                    height: 24
+                    Layout.preferredWidth: 24
+                    Layout.preferredHeight: 24
                     Layout.alignment: Qt.AlignVCenter
                     sourceSize.width: 24
                     sourceSize.height: 24
 
-                    // Replace MultiEffect with a Rectangle overlay
+                    // Rectangle overlay
                     Rectangle {
                         anchors.fill: parent
                         color: "#4CAF50" // Green color
@@ -512,28 +585,28 @@ Window {
                 Switch {
                     checked: SpeedReader.showTopSpeed
                     onCheckedChanged: {
-                        SpeedReader.setShowTopSpeed(checked);
+                        SpeedReader.setShowTopSpeed(checked)
                     }
                 }
             }
 
             Item {
-                height: 20
+                Layout.preferredHeight: 20
             } // spacer
 
             // Mode selection
             Rectangle {
-                width: parent.width - 20
-                height: 1
+                Layout.preferredWidth: parent.width - 20
+                Layout.preferredHeight: 1
                 color: "#CCCCCC"
             }
 
             ColumnLayout {
-                width: parent.width - 20
+                Layout.preferredWidth: parent.width - 20
                 spacing: 8
 
                 RowLayout {
-                    width: parent.width
+                    Layout.preferredWidth: parent.width
 
                     Button {
                         id: demoModeButton
@@ -542,8 +615,8 @@ Window {
                         highlighted: !SpeedReader.gpsActive
 
                         onClicked: {
-                            SpeedReader.startDemo();
-                            drawer.close(); // Close drawer after selection
+                            SpeedReader.startDemo()
+                            drawer.close() // Close drawer after selection
                         }
                     }
 
@@ -554,51 +627,51 @@ Window {
                         highlighted: SpeedReader.gpsActive
 
                         onClicked: {
-                            SpeedReader.startLocationUpdates();
-                            drawer.close(); // Close drawer after selection
+                            SpeedReader.startLocationUpdates()
+                            drawer.close() // Close drawer after selection
                         }
                     }
                 }
+            }
 
-                // GPS status indicator
-                Rectangle {
-                    Layout.fillWidth: true
-                    height: 24
-                    color: SpeedReader.gpsActive ? "#4CAF50" : "#D32F2F"
-                    radius: 4
+            // GPS status indicator
+            Rectangle {
+                Layout.fillWidth: true
+                Layout.preferredHeight: 24
+                color: SpeedReader.gpsActive ? "#4CAF50" : "#D32F2F"
+                radius: 4
 
-                    Text {
-                        id: gpsStatusText
-                        anchors.centerIn: parent
-                        text: SpeedReader.getGpsStatus()
-                        color: "white"
-                        font.pixelSize: 12
-                    }
+                Text {
+                    id: gpsStatusText
+                    anchors.centerIn: parent
+                    text: SpeedReader.getGpsStatus()
+                    color: "white"
+                    font.pixelSize: 12
+                }
 
-                    // Update the status text when the GPS state changes
-                    Connections {
-                        target: SpeedReader
-                        function onGpsActiveChanged() {
-                            gpsStatusText.text = SpeedReader.getGpsStatus();
-                        }
+                // Update the status text when the GPS state changes
+                Connections {
+                    target: SpeedReader
+                    function onGpsActiveChanged() {
+                        gpsStatusText.text = SpeedReader.getGpsStatus()
                     }
                 }
             }
 
             // About section
             Rectangle {
-                width: parent.width - 20
-                height: 1
+                Layout.preferredWidth: parent.width - 20
+                Layout.preferredHeight: 1
                 color: "#CCCCCC"
             }
 
             RowLayout {
-                width: parent.width - 20
+                Layout.preferredWidth: parent.width - 20
 
                 Image {
                     source: "file:assets/icon.svg"
-                    width: 48
-                    height: 48
+                    Layout.preferredWidth: 48
+                    Layout.preferredHeight: 48
                     Layout.alignment: Qt.AlignVCenter
                     sourceSize.width: 48
                     sourceSize.height: 48
@@ -608,7 +681,7 @@ Window {
                     text: qsTr("About %1").arg(SpeedReader.appName)
                     Layout.fillWidth: true
                     onClicked: {
-                        aboutDialog.open();
+                        aboutDialog.open()
                     }
                 }
             }
@@ -619,16 +692,19 @@ Window {
     MouseArea {
         id: mainMouseArea
         anchors.fill: parent
-        z: -1  // Set to be behind UI controls so clicks reach them first
-        
-        // Add this to ensure buttons are clickable
-        onPressed: mouse.accepted = !settingsButton.contains(Qt.point(mouseX, mouseY)) && 
-                                   !fullscreenButton.contains(Qt.point(mouseX, mouseY)) && 
-                                   !quickControlsRow.contains(Qt.point(mouseX, mouseY))
-        
+        z: -1 // Set to be behind UI controls so clicks reach buttons first
+
         onClicked: {
             // Only handle clicks in empty space (not on buttons)
-            SpeedReader.resetTopSpeed();
+            // First check if any control is under the mouse
+            var mousePoint = Qt.point(mouseX, mouseY)
+            if (!settingsButton.contains(settingsButton.mapFromItem(mainMouseArea, mousePoint)) &&
+                !fullscreenButton.contains(fullscreenButton.mapFromItem(mainMouseArea, mousePoint)) &&
+                !quickControlsRow.contains(quickControlsRow.mapFromItem(mainMouseArea, mousePoint))) {
+                
+                // No controls under the mouse, so reset top speed
+                SpeedReader.resetTopSpeed()
+            }
         }
     }
 
@@ -638,7 +714,7 @@ Window {
         title: qsTr("Choose a background image")
         nameFilters: [qsTr("Image files") + " (*.png *.jpg *.jpeg)"]
         onAccepted: {
-            SpeedReader.setBackgroundImagePath(selectedFile);
+            SpeedReader.setBackgroundImagePath(selectedFile)
         }
     }
 
@@ -653,7 +729,7 @@ Window {
         width: Math.min(root.width * 0.7, 400)
 
         onAccepted: {
-            Qt.quit();
+            Qt.quit()
         }
 
         Text {
@@ -678,15 +754,16 @@ Window {
 
             Image {
                 source: "file:assets/icon.svg"
-                width: 64
-                height: 64
+                Layout.preferredWidth: 64
+                Layout.preferredHeight: 64
                 Layout.alignment: Qt.AlignHCenter
                 sourceSize.width: 64
                 sourceSize.height: 64
             }
 
             Text {
-                text: qsTr("%1 v%2").arg(SpeedReader.appName).arg(SpeedReader.appVersion)
+                text: qsTr("%1 v%2").arg(SpeedReader.appName).arg(
+                          SpeedReader.appVersion)
                 font.bold: true
                 Layout.alignment: Qt.AlignHCenter
             }
@@ -698,68 +775,28 @@ Window {
         }
     }
 
-    // Connections to ensure UI stays in sync with SpeedReader state
-    Connections {
-        target: SpeedReader
+    // Indicator Light dialog
+    Dialog {
+        id: indicatorDialog
+        property string message: ""
+        standardButtons: Dialog.Ok
+        anchors.centerIn: Overlay.overlay
+        width: Math.min(root.width * 0.7, 400)
 
-        function onMetricChanged() {
-            // Need to force update display text when units change
-            // This ensures the digital display keeps updating after switching units
-            updateDisplayText();
-        }
-
-        function onShowDigitalChanged() {
-        // Already handled by the visibility binding on digitalGauge
-        }
-
-        function onShowAnalogChanged() {
-        // Already handled by the visibility binding on analogGauge
-        }
-
-        function onShowTopSpeedChanged() {
-        // Already handled by the visibility binding on topSpeedNeedle
-        }
-
-        function onSpeedChanged() {
-            // Always update the display text when speed changes
-            // This ensures the digital display keeps updating even after switching units
-            updateDisplayText();
-        }
-
-        function onTopSpeedChanged() {
-        // Already handled by bindings
-        }
-
-        function onMaxSpeedChanged() {
-            // The gauge scale might need updating
-            // This forces a layout refresh for the tick marks
-            analogGauge.visible = false;
-            analogGauge.visible = SpeedReader.showAnalog;
-        }
-
-        // Force display update when any relevant setting changes
-        function onDisplayTextChanged() {
-        // Already handled by binding to text property
+        Text {
+            width: parent.width
+            text: indicatorDialog.message
+            wrapMode: Text.WordWrap
+            horizontalAlignment: Text.AlignHCenter
         }
     }
 
-    // Helper function to ensure display updates
-    function updateDisplayText() {
-        // This forces a refresh of the display text
-        digitalGauge.text = SpeedReader.displayText;
-    }
-
-    Component.onCompleted: {
-        // Initialize the app state - start in demo mode
-        SpeedReader.startDemo();
-    }
-
-    // Top row shortcut buttons
+    // Quick control buttons - moved to bottom center for better access
     Row {
         id: quickControlsRow
-        anchors.top: parent.top
+        anchors.bottom: parent.bottom
         anchors.horizontalCenter: parent.horizontalCenter
-        anchors.topMargin: 10
+        anchors.bottomMargin: 10
         spacing: 10
         z: 10 // Make sure these are above other elements
 
@@ -787,124 +824,14 @@ Window {
             }
 
             onClicked: {
-                SpeedReader.setShowDigital(!SpeedReader.showDigital);
+                SpeedReader.setShowDigital(!SpeedReader.showDigital)
             }
 
-            // Tooltip
-            ToolTip.visible: hovered
-            ToolTip.text: qsTr("Toggle Digital Display")
-            ToolTip.delay: 1000
-        }
-
-        // Toggle Analog Display
-        RoundButton {
-            id: analogToggleButton
-            width: 40
-            height: 40
-
-            // Use the wiper icon from assets
-            contentItem: Image {
-                source: "file:assets/wiper.svg"
-                width: 24
-                height: 24
-                sourceSize.width: 24
-                sourceSize.height: 24
-                fillMode: Image.PreserveAspectFit
-
-                // Replace MultiEffect with a simple colored Rectangle
-                Rectangle {
-                    anchors.fill: parent
-                    color: "#F44336" // Red color
-                    opacity: 0.5
-                }
+            ToolTip {
+                visible: parent.hovered
+                text: qsTr("Toggle Digital Display")
+                delay: 1000
             }
-
-            // Highlight if analog display is active
-            background: Rectangle {
-                radius: width / 2
-                color: SpeedReader.showAnalog ? "#3F51B5" : "#444444"
-                opacity: 0.7
-            }
-
-            onClicked: {
-                SpeedReader.setShowAnalog(!SpeedReader.showAnalog);
-            }
-
-            // Tooltip
-            ToolTip.visible: hovered
-            ToolTip.text: qsTr("Toggle Analog Display")
-            ToolTip.delay: 1000
-        }
-
-        // Toggle Top Speed
-        RoundButton {
-            id: topSpeedToggleButton
-            width: 40
-            height: 40
-
-            // Use the cruise control icon from assets
-            contentItem: Image {
-                source: "file:assets/car-cruise-control.svg"
-                width: 24
-                height: 24
-                sourceSize.width: 24
-                sourceSize.height: 24
-                fillMode: Image.PreserveAspectFit
-
-                // Replace MultiEffect with a Rectangle overlay
-                Rectangle {
-                    anchors.fill: parent
-                    color: "#4CAF50" // Green color
-                    opacity: 0.5
-                }
-            }
-
-            // Highlight if top speed display is active
-            background: Rectangle {
-                radius: width / 2
-                color: SpeedReader.showTopSpeed ? "#3F51B5" : "#444444"
-                opacity: 0.7
-            }
-
-            onClicked: {
-                SpeedReader.setShowTopSpeed(!SpeedReader.showTopSpeed);
-            }
-
-            // Tooltip
-            ToolTip.visible: hovered
-            ToolTip.text: qsTr("Toggle Top Speed Indicator")
-            ToolTip.delay: 1000
-        }
-
-        // Reset Top Speed
-        RoundButton {
-            id: resetTopSpeedButton
-            width: 40
-            height: 40
-
-            // Show an X icon for reset
-            contentItem: Text {
-                text: qsTr("↺")
-                font.pixelSize: 24
-                color: "white"
-                horizontalAlignment: Text.AlignHCenter
-                verticalAlignment: Text.AlignVCenter
-            }
-
-            background: Rectangle {
-                radius: width / 2
-                color: "#444444"
-                opacity: 0.7
-            }
-
-            onClicked: {
-                SpeedReader.resetTopSpeed();
-            }
-
-            // Tooltip
-            ToolTip.visible: hovered
-            ToolTip.text: qsTr("Reset Top Speed")
-            ToolTip.delay: 1000
         }
 
         // Toggle Units
@@ -930,13 +857,79 @@ Window {
             }
 
             onClicked: {
-                SpeedReader.setMetric(!SpeedReader.metric);
+                SpeedReader.setMetric(!SpeedReader.metric)
             }
 
-            // Tooltip
-            ToolTip.visible: hovered
-            ToolTip.text: qsTr("Toggle Units: ") + (SpeedReader.metric ? "km/h" : "MPH")
-            ToolTip.delay: 1000
+            ToolTip {
+                visible: parent.hovered
+                text: qsTr("Toggle Units: ") + (SpeedReader.metric ? "km/h" : "MPH")
+                delay: 1000
+            }
         }
+
+        // Reset Top Speed
+        RoundButton {
+            id: resetTopSpeedButton
+            width: 40
+            height: 40
+
+            // Show an reset icon
+            contentItem: Text {
+                text: qsTr("↺")
+                font.pixelSize: 24
+                color: "white"
+                horizontalAlignment: Text.AlignHCenter
+                verticalAlignment: Text.AlignVCenter
+            }
+
+            background: Rectangle {
+                radius: width / 2
+                color: "#444444"
+                opacity: 0.7
+            }
+
+            onClicked: {
+                SpeedReader.resetTopSpeed()
+            }
+
+            ToolTip {
+                visible: parent.hovered
+                text: qsTr("Reset Top Speed")
+                delay: 1000
+            }
+        }
+    }
+
+    // Helper function to ensure display updates
+    function updateDisplayText() {
+        // This forces a refresh of the display text
+        digitalGauge.text = SpeedReader.displayText
+    }
+
+    // Connections to ensure UI stays in sync with SpeedReader state
+    Connections {
+        target: SpeedReader
+
+        function onMetricChanged() {
+            // Need to force update display text when units change
+            updateDisplayText()
+        }
+
+        function onSpeedChanged() {
+            // Always update the display text when speed changes
+            updateDisplayText()
+        }
+
+        function onMaxSpeedChanged() {
+            // The gauge scale might need updating
+            // Force a refresh of the analog gauge
+            classicSpeedometer.visible = false
+            classicSpeedometer.visible = SpeedReader.showAnalog
+        }
+    }
+
+    Component.onCompleted: {
+        // Initialize the app state - start in demo mode
+        SpeedReader.startDemo()
     }
 }

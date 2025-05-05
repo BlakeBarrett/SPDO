@@ -5,8 +5,8 @@
 #include <QRandomGenerator>
 
 // Define version constants from CMake
-#define PROJECT_VERSION_MAJOR 0
-#define PROJECT_VERSION_MINOR 1
+#define PROJECT_VERSION_MAJOR 2
+#define PROJECT_VERSION_MINOR 0
 
 SpeedReader::SpeedReader(QObject *parent)
     : QObject(parent), m_settings(QSettings::IniFormat, QSettings::UserScope,

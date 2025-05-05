@@ -92,7 +92,7 @@ private:
     double m_speed = 0.0;
     double m_topSpeed = 0.0;
     bool m_metric = false;
-    int m_maxSpeed = 35; // Default max speed value
+    int m_maxSpeed = 100; // Default max speed value
     bool m_showDigital = true;
     bool m_showAnalog = true;
     bool m_showTopSpeed = false;
@@ -101,8 +101,8 @@ private:
     bool m_demoIncreasing = true;
     bool m_gpsActive = false;
     QString m_gpsStatus = "GPS not active";
-    QString m_appName = "Speedometer";
-    QString m_appVersion = "1.0.0";
+    QString m_appName = "SPDO";
+    QString m_appVersion = "2.0.0";
 };
 
 #endif // SPDO_H
